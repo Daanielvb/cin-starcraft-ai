@@ -70,7 +70,7 @@ $ source $HOME/.virtualenvs/cin-starcraft-ai/bin/activate
 ```shell
 $ source $HOME/.virtualenvs/cin-starcraft-ai/bin/activate
 (cin-starcraft-ai) $ cd [CIN_STARCRAFT_AI_FOLDER_PATH]
-(cin-starcraft-ai) $ python -m pysc2.bin.agent --map Simple64 --agent agent.Agent
+(cin-starcraft-ai) $ python -m pysc2.bin.agent --map Simple64 --agent agent.Agent --agent_race terran
 ```
 
 ## References
