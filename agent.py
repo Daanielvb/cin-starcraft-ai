@@ -25,13 +25,13 @@ SCREEN = "feature_screen"
 NOT_QUEUED = [0]
 QUEUED = [1]
 
-def isInRange(value, beginValue, endValue):
+def is_in_range(value, beginValue, endValue):
     return value >= beginValue and value < endValue
 
-def isOnScreen(target):
-    return isInRange(target[0],0,84) and isInRange(target[1],0,84)
+def is_on_screen(target):
+    return is_in_range(target[0],0,84) and is_in_range(target[1],0,84)
 
-def getUnit(obs, type, player):
+def get_unit(obs, type, player):
     unit_type = obs.observation[SCREEN][FEATURE_UNIT_TYPE] == type
     unit_player = obs.observation[SCREEN][FEATURE_PLAYER_RELATIVE] == player
     unit_y, unit_x = (unit_type * unit_player).nonzero()
@@ -41,7 +41,7 @@ def getUnit(obs, type, player):
         return [unit_x[random_index], unit_y[random_index]]
     return None
 
-def getMeanPosition(obs, type, player):
+def get_mean_position(obs, type, player):
     unit_type = obs.observation[SCREEN][FEATURE_UNIT_TYPE] == type
     unit_player = obs.observation[SCREEN][FEATURE_PLAYER_RELATIVE] == player
     unit_y, unit_x = (unit_type * unit_player).nonzero()
@@ -55,21 +55,21 @@ class Agent(base_agent.BaseAgent):
     def step(self, obs):
         super(Agent, self).step(obs)
         if not self.selectedUnit or FUNCTION_MOVE_SCREEN not in obs.observation["available_actions"]:
-            target = getUnit(obs, UNIT_SCV, RELATIVE_SELF)
+            target = get_unit(obs, UNIT_SCV, RELATIVE_SELF)
             if target is None:
                 return actions.FunctionCall(FUNCTION_NO_OP, [])
             else:
                 self.selectedUnit = True
                 return actions.FunctionCall(FUNCTION_SELECT_POINT, [NOT_QUEUED, target])
         else:
-            target = getMeanPosition(obs, BUILDING_COMMAND_CENTER, RELATIVE_SELF)
+            target = get_mean_position(obs, BUILDING_COMMAND_CENTER, RELATIVE_SELF)
             if target is None:
                 return actions.FunctionCall(FUNCTION_NO_OP, [])
             else:
                 angle = 2 * math.pi * random.random()
                 radius = 20 + 4 * random.random()
                 target = [target[0] + radius*math.sin(angle), target[1] + radius*math.cos(angle)]
-                if isOnScreen(target):
+                if is_on_screen(target):
                     self.selectedUnit = False # permite selecionar outro
                     return actions.FunctionCall(FUNCTION_MOVE_SCREEN, [NOT_QUEUED, target])
                 else:
