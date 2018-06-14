@@ -25,10 +25,19 @@ SCREEN = "feature_screen"
 NOT_QUEUED = [0]
 QUEUED = [1]
 
-def is_in_range(value, beginValue, endValue):
-    return value >= beginValue and value < endValue
+
+def is_in_range(value, begin_value, end_value):
+    """
+    Checks if determined value is on the screen within specified range
+    :param value: to be checked on the screen
+    :param begin_value: initial range to be checked on the screen
+    :param end_value: final range to checked on the screen:
+    :return true or false
+    """
+    return value >= begin_value and value < end_value
 
 def is_on_screen(target):
+
     return is_in_range(target[0],0,84) and is_in_range(target[1],0,84)
 
 def get_unit(obs, type, player):
@@ -51,15 +60,15 @@ def get_mean_position(obs, type, player):
     return None
 	
 class Agent(base_agent.BaseAgent):
-    selectedUnit = False
+    selected_unit = False
     def step(self, obs):
         super(Agent, self).step(obs)
-        if not self.selectedUnit or FUNCTION_MOVE_SCREEN not in obs.observation["available_actions"]:
+        if not self.selected_unit or FUNCTION_MOVE_SCREEN not in obs.observation["available_actions"]:
             target = get_unit(obs, UNIT_SCV, RELATIVE_SELF)
             if target is None:
                 return actions.FunctionCall(FUNCTION_NO_OP, [])
             else:
-                self.selectedUnit = True
+                self.selected_unit = True
                 return actions.FunctionCall(FUNCTION_SELECT_POINT, [NOT_QUEUED, target])
         else:
             target = get_mean_position(obs, BUILDING_COMMAND_CENTER, RELATIVE_SELF)
@@ -70,7 +79,7 @@ class Agent(base_agent.BaseAgent):
                 radius = 20 + 4 * random.random()
                 target = [target[0] + radius*math.sin(angle), target[1] + radius*math.cos(angle)]
                 if is_on_screen(target):
-                    self.selectedUnit = False # permite selecionar outro
+                    self.selected_unit = False # permite selecionar outro
                     return actions.FunctionCall(FUNCTION_MOVE_SCREEN, [NOT_QUEUED, target])
                 else:
                     return actions.FunctionCall(FUNCTION_NO_OP, [])
