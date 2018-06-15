@@ -63,18 +63,12 @@ $ python3 -m venv cin-starcraft-ai
 ```shell
 $ source $HOME/.virtualenvs/cin-starcraft-ai/bin/activate
 (cin-starcraft-ai) $ cd [CIN_STARCRAFT_AI_FOLDER_PATH]
-(cin-starcraft-ai) $ pip install -r requirements-dev.txt
+(cin-starcraft-ai) $ pip3 install --user --upgrade sc2
 ```
 
-## How To Run
-```shell
-$ source $HOME/.virtualenvs/cin-starcraft-ai/bin/activate
-(cin-starcraft-ai) $ cd [CIN_STARCRAFT_AI_FOLDER_PATH]
-(cin-starcraft-ai) $ python -m pysc2.bin.agent --map Simple64 --agent agent.Agent --agent_race terran
-```
 
 ## References
-* https://github.com/deepmind/pysc2
+* https://github.com/Dentosal/python-sc2
 * https://github.com/Blizzard/s2client-proto
 * https://itnext.io/build-a-sparse-reward-pysc2-agent-a44e94ba5255
 * https://chatbotslife.com/building-a-basic-pysc2-agent-b109cde1477c
