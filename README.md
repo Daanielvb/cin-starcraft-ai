@@ -12,32 +12,24 @@ This is a project for the master degree class *IN1100 (Agentes Cognitivos e Adap
 ### StarCraft 2 Installation
 For Windows, get the installer from [link](https://us.battle.net/account/download/) and follow the instructions for its installation.
 
-For Linux., get the linux package version 4.1.2 from [link](http://blzdistsc2-a.akamaihd.net/Linux/SC2.4.1.2.60604_2018_05_16.zip) and unzip it using the password **iagreetotheeula** on `$HOME` directory. Then download the [Melee](http://blzdistsc2-a.akamaihd.net/MapPacks/Melee.zip) map pack and unzip it into the game folder. It should be into the folder *Maps*. Follow the final folder structure:
+For Linux., get the linux package version 4.1.2 from [link](http://blzdistsc2-a.akamaihd.net/Linux/SC2.4.1.2.60604_2018_05_16.zip) and unzip it using the password **iagreetotheeula** on `$HOME` directory. Then download the [Melee](http://blzdistsc2-a.akamaihd.net/MapPacks/Melee.zip) map pack and unzip it into the game folder. It should be into the folder *maps*. Follow the final folder structure:
 ```shell
 StarCraftII/
 ├── AppData
 ├── Battle.net
 ├── Interfaces
 ├── Libs
-├── Maps
-│   ├── Melee
-│   │   ├── Empty128.SC2Map
-│   │   ├── Flat128.SC2Map
-│   │   ├── Flat32.SC2Map
-│   │   ├── Flat48.SC2Map
-│   │   ├── Flat64.SC2Map
-│   │   ├── Flat96.SC2Map
-│   │   ├── Simple128.SC2Map
-│   │   ├── Simple64.SC2Map
-│   │   └── Simple96.SC2Map
-│   └── mini_games
-│       ├── BuildMarines.SC2Map
-│       ├── CollectMineralsAndGas.SC2Map
-│       ├── CollectMineralShards.SC2Map
-│       ├── DefeatRoaches.SC2Map
-│       ├── DefeatZerglingsAndBanelings.SC2Map
-│       ├── FindAndDefeatZerglings.SC2Map
-│       └── MoveToBeacon.SC2Map
+├── maps
+│   └── Melee
+│       ├── Empty128.SC2Map
+│       ├── Flat128.SC2Map
+│       ├── Flat32.SC2Map
+│       ├── Flat48.SC2Map
+│       ├── Flat64.SC2Map
+│       ├── Flat96.SC2Map
+│       ├── Simple128.SC2Map
+│       ├── Simple64.SC2Map
+│       └── Simple96.SC2Map
 ├── Replays
 ├── SC2Data
 └── Versions
@@ -63,7 +55,7 @@ $ python3 -m venv cin-starcraft-ai
 ```shell
 $ source $HOME/.virtualenvs/cin-starcraft-ai/bin/activate
 (cin-starcraft-ai) $ cd [CIN_STARCRAFT_AI_FOLDER_PATH]
-(cin-starcraft-ai) $ pip3 install --user --upgrade sc2
+(cin-starcraft-ai) $ pip install -r requirements-dev.txt
 ```
 
 
