@@ -3,6 +3,7 @@
 
 import sc2
 
+from core.bot.terran.ScoutBot import Scout
 from core.config import maps
 
 
@@ -27,5 +28,5 @@ class WorkerRushBot(sc2.BotAI):
 if __name__ == '__main__':
     sc2.run_game(sc2.maps.get(maps.Simple64), [
         sc2.player.Human(sc2.Race.Terran),
-        sc2.player.Bot(sc2.Race.Zerg, WorkerRushBot())
-    ], realtime=True)
+        sc2.player.Bot(sc2.Race.Terran, Scout())
+    ], realtime=False)
