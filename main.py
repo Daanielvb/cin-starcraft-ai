@@ -5,7 +5,7 @@ import sc2
 
 from core.bot.terran.ScoutBot import Scout
 from core.config import maps
-
+from core.bot.builder_bot import BuilderBot
 
 # All bots inherit from sc2.BotAI
 class WorkerRushBot(sc2.BotAI):
@@ -28,5 +28,5 @@ class WorkerRushBot(sc2.BotAI):
 if __name__ == '__main__':
     sc2.run_game(sc2.maps.get(maps.Simple64), [
         sc2.player.Human(sc2.Race.Terran),
-        sc2.player.Bot(sc2.Race.Terran, Scout())
+        sc2.player.Bot(sc2.Race.Terran, BuilderBot())
     ], realtime=False)
