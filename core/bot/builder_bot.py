@@ -32,7 +32,6 @@ class BuilderBot(sc2.BotAI):
             return await self.find_placement(UnitTypeId.SUPPLYDEPOT, self.start_location)
 
     async def scv_logic(self):
-        num_supplies = (self.units(UnitTypeId.SUPPLYDEPOT) | self.units(UnitTypeId.SUPPLYDEPOTLOWERED)).amount
         if self.supply_left < 5 and self.supply_cap < 200\
                 and self.can_afford(UnitTypeId.SUPPLYDEPOT) and not self.already_pending(UnitTypeId.SUPPLYDEPOT):
             #precisa construir um Supply Depot
@@ -73,14 +72,20 @@ class BuilderBot(sc2.BotAI):
                 await self.do(depot(AbilityId.MORPH_SUPPLYDEPOT_LOWER))
 
     async def center_logic(self):
+        num_idle_workers = len(self.workers.idle)
         command_centers = self.units(UnitTypeId.COMMANDCENTER).ready
-        num_command_centers = len(command_centers)
         for cmd_cen in command_centers:
-            if self.can_afford(UnitTypeId.SCV) and cmd_cen.noqueue and self.workers.amount < 16 * num_command_centers:
-                #precisa treinar um SCV
-                await self.do(cmd_cen.train(UnitTypeId.SCV))
+            if self.can_afford(UnitTypeId.SCV) and cmd_cen.noqueue:
+                refinery_slots = 0
+                refs = self.units(UnitTypeId.REFINERY).ready.closer_than(20, cmd_cen.position)
+                for ref in refs:
+                    refinery_slots += ref.ideal_harvesters - ref.assigned_harvesters
+
+                if cmd_cen.assigned_harvesters < (cmd_cen.ideal_harvesters + refinery_slots - num_idle_workers):
+                    #precisa treinar um SCV
+                    await self.do(cmd_cen.train(UnitTypeId.SCV))
 
     async def on_step(self, iteration):
-        await self.center_logic() #logica do COMMAND_CENTER
         await self.scv_logic() #logica do SCV
+        await self.center_logic() #logica do COMMAND_CENTER
         await self.depot_logic() #logica do SUPPLY DEPOT
