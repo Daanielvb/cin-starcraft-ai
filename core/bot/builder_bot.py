@@ -12,8 +12,10 @@ from sc2.ids.unit_typeid import UnitTypeId
 def distance(unit_a, unit_b):
     return unit_a.position.to2.distance_to(unit_b.position.to2)
 
+
 class BuilderBot(sc2.BotAI):
 
+    number_marines = 4
     next_depot = 0
 
     async def get_depot_build_location(self):
@@ -32,7 +34,7 @@ class BuilderBot(sc2.BotAI):
             return await self.find_placement(UnitTypeId.SUPPLYDEPOT, self.start_location)
 
     async def scv_logic(self):
-        if self.supply_left < 5 and self.supply_cap < 200\
+        if self.supply_left < 5 and self.supply_cap < 200 \
                 and self.can_afford(UnitTypeId.SUPPLYDEPOT) and not self.already_pending(UnitTypeId.SUPPLYDEPOT):
             #precisa construir um Supply Depot
             build_location = await self.get_depot_build_location()
@@ -45,9 +47,14 @@ class BuilderBot(sc2.BotAI):
             if build_location is not None:
                 scv = self.select_build_worker(build_location, True)
                 await self.do(scv.build(UnitTypeId.REFINERY, build_location))
-        elif self.units(UnitTypeId.COMMANDCENTER).amount < 2 and self.can_afford(UnitTypeId.COMMANDCENTER):
+        elif self.units(UnitTypeId.COMMANDCENTER).amount < 3 and self.can_afford(UnitTypeId.COMMANDCENTER):
             #precisa criar outro Command Center
             await self.expand_now()
+        elif self.units(UnitTypeId.BARRACKS).amount < 2 and self.can_afford(UnitTypeId.BARRACKS):
+            build_location = await self.get_depot_build_location()
+            if build_location is not None:
+                scv = self.select_build_worker(build_location, True)
+                await self.do(scv.build(UnitTypeId.BARRACKS, build_location))
 
         #distribui os trabalhadores
         await self.distribute_workers()
