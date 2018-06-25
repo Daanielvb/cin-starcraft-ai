@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import sc2
-from core.config import maps
 import numpy as np
 
 from sc2.position import Point2
