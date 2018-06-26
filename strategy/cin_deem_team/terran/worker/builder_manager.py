@@ -67,24 +67,7 @@ class Builder(GenericTerranBot):
                 await self.do(depot(AbilityId.MORPH_SUPPLYDEPOT_LOWER))
 
 
-class BuilderRequest(object):
-    """
-    Builder Request
-    """
-
-    def __init__(self, request_priority_level, build_type, location, build_number_limit=9999):
-        self.request_priority_level = request_priority_level
-        self.build_type = build_type
-        self.location = location
-        self.build_number_limit = build_number_limit
 
 
-class RequestPriority(Enum):
-    """
-    Request Priority
-    """
-    PRIORITY_0 = 0
-    PRIORITY_1 = 1
-    PRIORITY_2 = 2
-    PRIORITY_3 = 3
-    PRIORITY_4 = 4
+
+

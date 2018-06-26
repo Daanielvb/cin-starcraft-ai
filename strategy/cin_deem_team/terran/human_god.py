@@ -9,7 +9,7 @@ from core.bot.terran.generic_terran_bot import GenericTerranBot
 from strategy.cin_deem_team.terran.worker.worker_manager import WorkerManager
 
 
-class HumanManager(GenericTerranBot):
+class HumanGod(GenericTerranBot):
     """ Supreme master leader of the hierarchy class """
 
     def on_start(self):
