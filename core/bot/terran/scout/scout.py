@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 import sc2
 
+from core.bot.terran.generic_terran_bot import GenericTerranBot
 from core.bot.util import *
 
 
-class Scout(sc2.BotAI):
-
+class Scout(GenericTerranBot):
     cmd_center = None
     current_scout = None
     found_enemy_base = False
@@ -32,12 +32,14 @@ class Scout(sc2.BotAI):
         Scout.enemy_start_position = self.known_enemy_structures[0].position
         Scout.found_enemy_base = True
 
-    async def on_step(self, iteration):
+    def on_start(self):
+        pass
 
+    async def default_on_step(self, iteration, observer):
         if Scout.cmd_center is None:
             Scout.set_cmd_center(self)
             Scout.mean_location = get_mean_location(self.start_location, self.enemy_start_locations[0])
-        # Select worker to be the scouter
+            # Select worker to be the scouter
         elif Scout.current_scout is None:
             Scout.set_scout(self)
             await Scout.move_scout_to(self, self.enemy_start_locations[Scout.enemy_location_counter])
@@ -60,8 +62,8 @@ class Scout(sc2.BotAI):
                         await Scout.move_scout_to(self, Scout.mean_location)
                         Scout.patrol = True
 
-                        #await self.do(Scout.current_scout.move(self.start_location))
+                        # await self.do(Scout.current_scout.move(self.start_location))
                 else:
                     # Haven't found enemy yet, go to next location
                     Scout.enemy_location_counter += 1
-                    #await self.do(Scout.current_scout.move(self.enemy_start_locations[Scout.enemy_location_counter]))
+                    # await self.do(Scout.current_scout.move(self.enemy_start_locations[Scout.enemy_location_counter]))
