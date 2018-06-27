@@ -29,5 +29,6 @@ class ScoutManager(GenericTerranBot):
         """
         for bot in self.bots.values():
             self.log("For bot {}".format(bot))
-            bot.default_on_step(iteration, observer)
+            if iteration == 0:
+                await bot.default_on_step(iteration, observer)
 
