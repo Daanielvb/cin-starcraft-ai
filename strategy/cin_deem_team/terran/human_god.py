@@ -1,26 +1,27 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-Supreme master manager of the hierarchy
-"""
+from sc2 import Race
 
-from core.bot.terran.generic_terran_bot import GenericTerranBot
-from strategy.cin_deem_team.terran.worker.worker_manager import WorkerManager
+from core.bot.generic_bot_player import GenericBotPlayer
+from strategy.cin_deem_team.terran.worker_manager import WorkerManager
+from strategy.cin_deem_team.terran.scout_manager import ScoutManager
 
 
-class HumanGod(GenericTerranBot):
-    """ Supreme master leader of the hierarchy class """
+class HumanGod(GenericBotPlayer):
+    """ The player class of the game match """
+
+    def __init__(self):
+        super(HumanGod, self).__init__(race_type=Race.Terran)
 
     def on_start(self):
         """ Allows initializing the bot when the game data is available """
-        self.add_bot(WorkerManager())
+        self.add_bot(WorkerManager(bot_player=self))
+        self.add_bot(ScoutManager(bot_player=self))
 
-    async def default_on_step(self, iteration, observer):
-        """ Ran on every game step (looped in real-time mode).
+    async def default_behavior(self, iteration):
+        """ The default behavior of the bot
         :param int iteration: Game loop iteration
-        :param core.bot.generic_bot.GenericBot observer: The supreme observer
         """
         for bot in self.bots.values():
-            self.log("For bot {}".format(bot))
-            await bot.default_on_step(iteration, observer)
+            await bot.default_behavior(iteration)

@@ -1,24 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-Default SCV bot class
-"""
-
-from core.bot.terran.generic_terran_bot import GenericTerranBot
-from core.behavior.terran.worker import logic
+from core.bot.generic_bot_non_player import GenericBotNonPlayer
 
 
-class SCV(GenericTerranBot):
-    """ A default SCV bot class """
+class SCV(GenericBotNonPlayer):
+    """ A SCV bot class """
 
-    def on_start(self):
-        """ Allows initializing the bot when the game data is available """
-        pass
-
-    async def default_on_step(self, iteration, observer):
-        """ Ran on every game step (looped in real-time mode).
+    async def default_behavior(self, iteration):
+        """ The default behavior of the bot
         :param int iteration: Game loop iteration
-        :param core.bot.generic_bot.GenericBot observer: The supreme observer
         """
-        await logic.scv_logic(self, iteration, observer)
+        await self.worker_rush_attack()
+
+    async def worker_rush_attack(self):
+        """ Send all workers to attack the enemy base """
+        self.log("Starting Worker rush attack")
+        for worker in self.bot_player.workers:
+            await self.bot_player.do(worker.attack(self.bot_player.enemy_start_locations[0]))

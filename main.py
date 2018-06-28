@@ -15,7 +15,7 @@ from strategy.cin_deem_team.terran.human_god import HumanGod
 if __name__ == '__main__':
     players = [
         player.Human(Race.Terran),
-        player.Bot(Race.Terran, HumanGod())
+        HumanGod().build_bot_player()
     ]
 
     run_game(
