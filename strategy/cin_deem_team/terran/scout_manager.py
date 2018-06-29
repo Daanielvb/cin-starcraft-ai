@@ -21,6 +21,18 @@ class ScoutManager(GenericBotNonPlayer):
         """
         for bot in self.bots.values():
             if iteration == 0:
-                # TODO: Daniel, remember to split the scout() into minor methods and call all these
-                # minor methods into scout(). It will allow to trigger the scout() into 1 iteration
-                await bot.default_behavior(iteration)
+                bot.set_cmd_center()
+                bot.set_scout()
+            elif iteration == 1:
+                await bot.visit_enemy()
+            else:
+                if bot.get_found_enemy_base():
+                    if iteration % 30 == 0:
+                        await bot.visit_middle()
+                    elif iteration % 80 == 0:
+                        await bot.visit_base()
+                # TODO: Implement nearby friends logic and warn
+                # elif bot.found_enemies_nearby():
+                    # await bot.visit_base()
+                else:
+                    await bot.default_behavior(iteration)

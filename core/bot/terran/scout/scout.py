@@ -31,62 +31,56 @@ class Scout(GenericBotNonPlayer):
         await self.scout()
 
     async def move_scout_to(self, position):
+        self.log("Moving Scout")
         await self.bot_player.do(self.current_scout.move(position))
 
     def set_scout(self):
+        self.log("Setting Scout")
         if self.current_scout is None:
+            # TODO: Get free scout based on BOARD info
+            # TODO: If there are not free scouts, ask the manager for one.
             self.current_scout = self.bot_player.workers[0]
+            self.set_mean_location()
+
+    def set_mean_location(self):
+        self.mean_location = util.get_mean_location(
+                self.bot_player.start_location, self.bot_player.enemy_start_locations[0]
+            )
 
     def set_cmd_center(self):
+        self.log("Setting cmd center")
         if self.cmd_center is None:
             self.cmd_center = self.bot_player.units.structure[0]
 
     def set_enemy_position(self):
+        self.log("Found enemy base")
         self.enemy_start_position = self.bot_player.known_enemy_structures[0].position
         self.found_enemy_base = True
 
+    def get_found_enemy_base(self):
+        return self.found_enemy_base
+
+    def get_found_enemies_nearby(self):
+        return self.found_enemies_nearby
+
+    async def visit_enemy(self):
+        await self.move_scout_to(self.bot_player.enemy_start_locations[self.enemy_location_counter])
+
+    async def visit_base(self):
+        self.log("Visiting base")
+        await self.move_scout_to(self.cmd_center)
+
+    async def visit_middle(self):
+        self.log("Visiting middle")
+        await self.move_scout_to(self.cmd_center)
+
     async def scout(self):
-        self.log("Starting Scout")
+        self.log("Starting scout")
+        if self.bot_player.known_enemy_structures and not self.found_enemy_base:
+            # TODO: Write this info on the BOARD
+            self.set_enemy_position()
 
-        if self.cmd_center is None:
-            self.set_cmd_center()
-            self.mean_location = util.get_mean_location(
-                self.bot_player.start_location, self.bot_player.enemy_start_locations[0]
-            )
-
-        elif self.current_scout is None:
-            # Select worker to be the scouter
-            self.set_scout()
-            await self.move_scout_to(
-                self.bot_player.enemy_start_locations[self.enemy_location_counter]
-            )
-
-        else:
-
-            if self.bot_player.known_enemy_structures and not self.found_enemy_base:
-                self.set_enemy_position()
-
-            # If scout is idle
-            if self.bot_player.units.idle.not_structure and util.contains_unit(self.current_scout, self.bot_player.units.idle.not_structure):
-
-                # Found enemy location, go back to base
-                if self.found_enemy_base:
-
-                    # current scout position is not being updated, so this approach doesn't work
-                    # dist_to_middle = distance(self.current_scout.position, self.mean_location)
-                    # dist_to_base = distance(self.current_scout.position, self.cmd_center)
-                    # Patrolling not working yet
-                    if self.patrol:
-                        await self.move_scout_to(self.cmd_center)
-                        self.patrol = False
-
-                    if not self.patrol:
-                        await self.move_scout_to(self.mean_location)
-                        self.patrol = True
-
-                        # await observer.do(self.current_scout.move(observer.start_location))
-                else:
-                    # Haven't found enemy yet, go to next location
-                    self.enemy_location_counter += 1
-
-                    # await observer.do(self.current_scout.move(observer.enemy_start_locations[self.enemy_location_counter]))
+        # If found enemy base, go patrolling
+        if self.found_enemy_base:
+            # current scout position is not being updated, so this approach doesn't work
+            await self.visit_base()
