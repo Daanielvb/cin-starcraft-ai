@@ -1,17 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 from core.register_board.constants import RequestStatus
 
 
 class Request(object):
     """ Request """
 
-    def __init__(self, request_priority, location, unit_type_id=None, operation_type_id=None):
+    def __init__(self, request_priority, location=None, unit_type_id=None, operation_type_id=None):
         """
         :param core.request_board.request_priority.RequestPriority request_priority:
         :param sc2.position.Point2 location:
         :param sc2.ids.unit_typeid.UnitTypeId unit_type_id:
-        :param core.request_board.operation_type_id.OperationTypeId operation_type_id:
+        :param core.register_board.constants.OperationTypeId operation_type_id:
         """
         self._request_id = None
         self._request_priority_level = request_priority

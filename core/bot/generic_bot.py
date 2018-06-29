@@ -3,6 +3,8 @@
 
 from sc2 import bot_ai
 
+from core.register_board.boards import BoardInfo
+from core.register_board.boards import BoardRequest
 from utils import logger
 
 
@@ -15,7 +17,8 @@ class GenericBot(bot_ai.BotAI):
         """
         self._race_type = race_type
         self._bots = dict()
-        self._board = dict()
+        self._board_info = BoardInfo()
+        self._board_request = BoardRequest()
 
     def __str__(self):
         """
@@ -46,11 +49,18 @@ class GenericBot(bot_ai.BotAI):
         return self._bots
 
     @property
-    def board(self):
+    def board_info(self):
         """
-        :return dict:
+        :return core.register_board.boards.BoardInfo:
         """
-        return self._board
+        return self._board_info
+
+    @property
+    def board_request(self):
+        """
+        :return core.register_board.boards.BoardRequest:
+        """
+        return self._board_request
 
     def add_bot(self, bot):
         """
@@ -69,9 +79,23 @@ class GenericBot(bot_ai.BotAI):
         """ Allows initializing the bot when the game data is available """
         raise NotImplementedError
 
-    async def default_behavior(self, iteration):
+    async def default_behavior(self, iteration, request):
         """ The default behavior of the bot
         :param int iteration: Game loop iteration
+        :param core.register_board.request.Request request:
         """
         raise NotImplementedError
+
+    def send_info(self, info):
+        """
+        :param info:
+        """
+        self._board_info.register(info)
+
+    def send_request(self, request):
+        """
+        :param request:
+        :return:
+        """
+        self._board_request.register(request)
 

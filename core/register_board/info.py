@@ -5,33 +5,65 @@
 class Info(object):
     """ Information """
 
-    def __init__(self, location, timestamp, info_origin):
+    def __init__(self, iteration, bot, request, status, unit=None):
         """
-        :param sc2.position.Point2 location:
-        :param datetime.time timestamp:
+        :param int iteration:
+        :param bot:
+        :param request:
+        :param str status:
+        :param unit:
         """
-        self._info_id = None
-        self._location = location
-        self._info_origin = info_origin
-        self._timestamp = timestamp
+        self._iteration = iteration
+        self._bot = bot
+        self._request = request
+        self._status = status
+        self._unit = unit
 
     @property
-    def info_id(self):
+    def iteration(self):
         """
         :return int:
         """
-        return self._info_id
-
-    @info_id.setter
-    def info_id(self, info_id):
-        """
-        :param int info_id:
-        """
-        self._info_id = info_id
+        return self._iteration
 
     @property
-    def info_origin(self):
+    def bot(self):
         """
-        :return int:
+        :return :
         """
-        return self._info_origin
+        return self._bot
+
+    @property
+    def request(self):
+        """
+        :return :
+        """
+        return self._request
+
+    @property
+    def status(self):
+        """
+        :return :
+        """
+        return self._status
+
+    @status.setter
+    def status(self, status):
+        """
+        :return :
+        """
+        self._status = status
+
+    @property
+    def unit(self):
+        """
+        :return :
+        """
+        return self._unit
+
+    @unit.setter
+    def unit(self, unit):
+        """
+        :return :
+        """
+        self._unit = unit

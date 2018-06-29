@@ -24,6 +24,19 @@ class BoardRequest(object):
         """
         return self._board
 
+    def remove(self, request):
+        """
+        :param core.request_board.request.Request request:
+        """
+        self._board.remove(request)
+
+    def search_request_by_operation_id(self, operation_id):
+        """
+        :param core.register_board.constants.OperationTypeId operation_id:
+        :return list[core.register_board.request.Request]:
+        """
+        return [request for request in self.board if request.operation_type_id == operation_id]
+
 
 class BoardInfo(object):
     """ Board for share information between bots """
@@ -43,6 +56,6 @@ class BoardInfo(object):
     @property
     def board(self):
         """
-        :return list[core.register_board.info.Info:
+        :return list[core.register_board.info.Info]:
         """
         return self._board

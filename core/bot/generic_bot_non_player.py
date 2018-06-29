@@ -37,8 +37,9 @@ class GenericBotNonPlayer(GenericBot):
         # No needed for non-players bot
         pass
 
-    async def default_behavior(self, iteration):
+    async def default_behavior(self, iteration, request):
         """ The default behavior of the bot
         :param int iteration: Game loop iteration
+        :param core.register_board.request.Request request:
         """
         raise NotImplementedError
