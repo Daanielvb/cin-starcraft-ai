@@ -21,10 +21,9 @@ class HumanGod(GenericBotPlayer):
         """ Allows initializing the bot when the game data is available """
         self.add_bot(ScoutManager(bot_player=self))
 
-    async def default_behavior(self, iteration, request=None):
+    async def default_behavior(self, iteration):
         """ The default behavior of the bot
         :param int iteration: Game loop iteration
-        :param core.register_board.request.Request request:
         """
         if iteration == 0:
             scout_request = Request(
@@ -34,8 +33,17 @@ class HumanGod(GenericBotPlayer):
             )
             self.board_request.register(scout_request)
 
-        await self.read_requests(iteration)
+        self._sync_bot_requests()
+        await self._trigger_bots_default_behavior(iteration)
 
-    async def read_requests(self, iteration):
+    def _sync_bot_requests(self):
+        """ Update the requests for each bot added """
         for bot in self.bots.values():
-            await bot.default_behavior(iteration=iteration, request=None)
+            bot.read_requests()
+
+    async def _trigger_bots_default_behavior(self, iteration):
+        """
+        :param int iteration:
+        """
+        for bot in self.bots.values():
+            await bot.default_behavior(iteration)

@@ -79,23 +79,26 @@ class GenericBot(bot_ai.BotAI):
         """ Allows initializing the bot when the game data is available """
         raise NotImplementedError
 
-    async def default_behavior(self, iteration, request):
+    async def default_behavior(self, iteration):
         """ The default behavior of the bot
         :param int iteration: Game loop iteration
-        :param core.register_board.request.Request request:
+        """
+        raise NotImplementedError
+
+    def find_request(self):
+        """ Implements the logic to find the requests that should be handled by the bot
+        :return list[core.register_board.request.Request]
         """
         raise NotImplementedError
 
     def send_info(self, info):
         """
-        :param info:
+        :param core.register_board.info.Info info:
         """
         self._board_info.register(info)
 
     def send_request(self, request):
         """
-        :param request:
-        :return:
+        :param core.register_board.request.Request request:
         """
         self._board_request.register(request)
-

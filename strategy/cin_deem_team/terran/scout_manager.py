@@ -16,17 +16,18 @@ class ScoutManager(GenericBotNonPlayer):
         super(ScoutManager, self).__init__(bot_player)
         self.add_bot(Scout(bot_player, self.board_info))
 
-    async def default_behavior(self, iteration, request):
+    def find_request(self):
+        """ Implements the logic to find the requests that should be handled by the bot
+        :return list[core.register_board.request.Request]
+        """
+        return self.bot_player.board_request.search_request_by_operation_id(OperationTypeId.SCOUT)
+
+    async def default_behavior(self, iteration):
         """ The default behavior of the bot
         :param int iteration: Game loop iteration
-        :param core.register_board.request.Request request:
         """
-        scout_requests = self.bot_player.board_request.search_request_by_operation_id(
-            OperationTypeId.SCOUT
-        )
-
-        for scout_request in scout_requests:
-            await self.perform_scout(iteration, scout_request)
+        for request in self.requests:
+            await self.perform_scout(iteration, request)
 
     async def perform_scout(self, iteration, scout_request):
         """
