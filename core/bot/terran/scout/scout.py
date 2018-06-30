@@ -1,23 +1,25 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from core.bot.generic_bot_non_player import GenericBotNonPlayer
+from core.bot.generic_bot_non_player_unit import GenericBotNonPlayerUnit
 from core.bot import util
-from core.register_board.info import Info
+from core.register_board.request import RequestStatus
 
-START = 'START'
-STOP = 'STOP'
 
-class Scout(GenericBotNonPlayer):
-    """  A Scout bot class """
+class Scout(GenericBotNonPlayerUnit):
+    """  A Scout bot unit class """
 
-    def __init__(self, bot_player, border):
+    def __init__(self, bot_player, iteration, request, unit_tag):
         """
         :param core.bot.generic_bot_player.GenericBotPlayer bot_player:
+        :param int iteration:
+        :param core.register_board.request.Request request:
+        :param int unit_tag:
         """
-        super(Scout, self).__init__(bot_player)
+        super(Scout, self).__init__(
+            bot_player=bot_player, iteration=iteration, request=request, unit_tag=unit_tag
+        )
 
-        self._border_info = border
         self.cmd_center = None
         self.current_scout = None
         self.found_enemy_base = False
@@ -27,30 +29,29 @@ class Scout(GenericBotNonPlayer):
         self.is_enemy_coming = False
         self.current_idle_units = None
         self.patrol = True
-        self._info = None
+        self._last_positions = list()
 
-    async def default_behavior(self, iteration, request):
+    async def default_behavior(self, iteration):
         """ The default behavior of the bot
         :param int iteration: Game loop iteration
-        :param core.register_board.request.Request request:
         """
-        if iteration == 0:
-            self._info = Info(iteration=iteration, bot=self, request=request, status=START)
-            self.bot_player.board_info.register(self._info)
-            await self.scout(request)
+        self.log("Executing {}".format(self._info.request))
+        self.info.status = RequestStatus.ON_GOING
+        await self.scout()
 
     async def move_scout_to(self, position):
         self.log("Moving Scout")
-        await self.bot_player.do(self.current_scout.move(position))
+        await self.bot_player.do(self.get_current_scout().move(position))
 
     def set_scout(self):
+        # TODO: We can get the scout using self.get_current_scout().
+        # TODO Evaluate to replace this method for this new one
         self.log("Setting Scout")
         if not self.current_scout:
             # TODO: Get free scout based on BOARD info
             # TODO: If there are not free scouts, ask the manager for one.
-            self.current_scout = self.bot_player.workers[0]
+            self.current_scout = self.get_current_scout()
             self.set_mean_location()
-            self._info.unit = self.current_scout
 
     def set_mean_location(self):
         self.mean_location = util.get_mean_location(
@@ -84,10 +85,9 @@ class Scout(GenericBotNonPlayer):
         self.log("Visiting middle")
         await self.move_scout_to(self.cmd_center)
 
-    async def scout(self, request):
-        self.log("Executing {}".format(request))
+    async def scout(self):
         self.set_cmd_center()
-        self.set_scout()
+        # self.set_scout() TODO: Please check comments on this method definition
         await self.visit_enemy()
 
         # Sorry :)

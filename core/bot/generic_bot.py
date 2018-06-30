@@ -3,8 +3,6 @@
 
 from sc2 import bot_ai
 
-from core.register_board.boards import BoardInfo
-from core.register_board.boards import BoardRequest
 from utils import logger
 
 
@@ -16,9 +14,6 @@ class GenericBot(bot_ai.BotAI):
         :param sc2.data.Race race_type:
         """
         self._race_type = race_type
-        self._bots = dict()
-        self._board_info = BoardInfo()
-        self._board_request = BoardRequest()
 
     def __str__(self):
         """
@@ -41,33 +36,6 @@ class GenericBot(bot_ai.BotAI):
         """
         return self._race_type
 
-    @property
-    def bots(self):
-        """
-        :return dict:
-        """
-        return self._bots
-
-    @property
-    def board_info(self):
-        """
-        :return core.register_board.boards.BoardInfo:
-        """
-        return self._board_info
-
-    @property
-    def board_request(self):
-        """
-        :return core.register_board.boards.BoardRequest:
-        """
-        return self._board_request
-
-    def add_bot(self, bot):
-        """
-        :param core.bot.generic_bot.GenericBot bot:
-        """
-        self._bots[str(bot)] = bot
-
     async def on_step(self, iteration):
         """ Ran on every game step (looped in real-time mode).
         :param int iteration: Game loop iteration
@@ -75,30 +43,8 @@ class GenericBot(bot_ai.BotAI):
         self.log("Iteration #{}".format(iteration))
         await self.default_behavior(iteration)
 
-    def on_start(self):
-        """ Allows initializing the bot when the game data is available """
-        raise NotImplementedError
-
     async def default_behavior(self, iteration):
         """ The default behavior of the bot
         :param int iteration: Game loop iteration
         """
         raise NotImplementedError
-
-    def find_request(self):
-        """ Implements the logic to find the requests that should be handled by the bot
-        :return list[core.register_board.request.Request]
-        """
-        raise NotImplementedError
-
-    def send_info(self, info):
-        """
-        :param core.register_board.info.Info info:
-        """
-        self._board_info.register(info)
-
-    def send_request(self, request):
-        """
-        :param core.register_board.request.Request request:
-        """
-        self._board_request.register(request)

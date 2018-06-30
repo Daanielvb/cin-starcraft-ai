@@ -5,7 +5,7 @@ from core.register_board.constants import RequestStatus
 
 
 class Request(object):
-    """ Request """
+    """ An action request """
 
     def __init__(self, request_priority, location=None, unit_type_id=None, operation_type_id=None):
         """
@@ -20,6 +20,18 @@ class Request(object):
         self._unit_type_id = unit_type_id
         self._operation_type_id = operation_type_id
         self._status = RequestStatus.TO_BE_DONE
+
+    def __str__(self):
+        return str(
+            dict(
+                operation_type_id=self._operation_type_id,
+                unit_type_id=self._unit_type_id,
+                request_priority_level=self._request_priority_level
+            )
+        )
+
+    def __eq__(self, other):
+        return isinstance(other, Request) and self._request_id == other.request_id
 
     @property
     def request_id(self):
@@ -59,13 +71,13 @@ class Request(object):
     @property
     def status(self):
         """
-        :return str:
+        :return core.register_board.constants.RequestStatus:
         """
         return self._status
 
     @status.setter
     def status(self, status):
         """
-        :param str status:
+        :param core.register_board.constants.RequestStatus status:
         """
         self._status = status

@@ -3,21 +3,19 @@
 
 
 class Info(object):
-    """ Information """
+    """ Request information status """
 
-    def __init__(self, iteration, bot, request, status, unit=None):
+    def __init__(self, iteration, bot, request, unit_tag):
         """
         :param int iteration:
-        :param bot:
-        :param request:
-        :param str status:
-        :param unit:
+        :param core.bot.generic_bot.GenericBot bot:
+        :param core.register_board.request.Request request:
+        :param int unit_tag:
         """
         self._iteration = iteration
         self._bot = bot
         self._request = request
-        self._status = status
-        self._unit = unit
+        self._unit_tag = unit_tag
 
     @property
     def iteration(self):
@@ -29,41 +27,34 @@ class Info(object):
     @property
     def bot(self):
         """
-        :return :
+        :return core.bot.generic_bot.GenericBot:
         """
         return self._bot
 
     @property
     def request(self):
         """
-        :return :
+        :return core.register_board.request.Request:
         """
         return self._request
 
     @property
     def status(self):
         """
-        :return :
+        :return core.register_board.request.RequestStatus:
         """
-        return self._status
+        return self._request.status
 
     @status.setter
     def status(self, status):
         """
-        :return :
+        :param core.register_board.request.RequestStatus status:
         """
-        self._status = status
+        self._request.status = status
 
     @property
-    def unit(self):
+    def unit_tag(self):
         """
-        :return :
+        :return int:
         """
-        return self._unit
-
-    @unit.setter
-    def unit(self, unit):
-        """
-        :return :
-        """
-        self._unit = unit
+        return self._unit_tag
