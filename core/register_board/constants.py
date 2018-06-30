@@ -12,6 +12,8 @@ class OperationTypeId(Enum):
     SCOUT = 'SCOUT'
     DEFEND = 'DEFEND'
     BUILD = 'BUILD'
+    TRAIN_SCV_ALLOW = 'ALLOW SCV'
+    TRAIN_SCV_DENY = 'DENY SCV'
 
 
 class RequestStatus(Enum):
