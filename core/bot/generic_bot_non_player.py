@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from sc2.ids.unit_typeid import UnitTypeId
+
 from core.bot.generic_bot import GenericBot
-from core.exceptions import NotAddingNonPlayerBotException
 
 
 class GenericBotNonPlayer(GenericBot):
@@ -30,35 +31,59 @@ class GenericBotNonPlayer(GenericBot):
         """
         return self._requests
 
-    def add_bot(self, bot):
-        """
-        :param core.bot.generic_bot_non_player.GenericBotNonPlayer bot:
-        :raise NotAddingNonPlayerBot:
-        """
-        if not isinstance(bot, GenericBotNonPlayer):
-            raise NotAddingNonPlayerBotException()
-
-        self._bots[str(bot)] = bot
-
-    def on_start(self):
-        """ Allows initializing the bot when the game data is available """
-        # No needed for non-players bot
-        pass
-
-    async def default_behavior(self, iteration):
-        """ The default behavior of the bot
-        :param int iteration: Game loop iteration
-        """
-        raise NotImplementedError
-
-    def read_requests(self):
-        """ Update the requests that should be handled by the bot
-        :return list[core.register_board.request.Request]
-        """
-        self._requests.extend(self.find_request())
-
     def find_request(self):
         """ Implements the logic to find the requests that should be handled by the bot
         :return list[core.register_board.request.Request]
         """
         raise NotImplementedError
+
+    async def requests_handler(self, iteration):
+        """ Logic to go through the bot requests
+        :param int iteration: Game loop iteration
+        """
+        raise NotImplementedError
+
+    def requests_status_update(self):
+        """ Logic to update the requests status """
+        raise NotImplementedError
+
+    async def default_behavior(self, iteration):
+        """ The default behavior of the bot
+        :param int iteration: Game loop iteration
+        """
+        await self.requests_handler(iteration)
+        self.requests_status_update()
+
+    def sync_requests(self):
+        """ Update the requests that should be handled by the bot
+        :return list[core.register_board.request.Request]
+        """
+        self._requests.extend(self.find_request())
+
+    def get_scvs_unit_from_bord_info(self):
+        """
+        :return list[sc2.unit.Unit]:
+        """
+        scvs = []
+
+        for info in self.bot_player.board_info.board:
+            if self.bot_player.get_current_scv_unit(info.unit_tag).type_id == UnitTypeId.SCV:
+                scvs.append(info.unit)
+
+        return scvs
+
+    def find_available_scvs_units(self):
+        """ Look for SCVs unit on board info that is not performing any request
+        :return list[sc2.unit.Unit]:
+        """
+        available_scvs = None
+        all_scvs = self.bot_player.workers[:]
+
+        if not self.bot_player.board_info.board:
+            available_scvs = all_scvs
+
+        else:
+            scvs_from_board_info = self.get_scvs_unit_from_bord_info()
+            available_scvs = list(set(all_scvs) - set(scvs_from_board_info))
+
+        return available_scvs

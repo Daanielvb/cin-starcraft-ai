@@ -30,23 +30,15 @@ class HumanGod(GenericBotPlayer):
         """ The default behavior of the bot
         :param int iteration: Game loop iteration
         """
-        if iteration == 0:
-            scout_request = Request(
-                request_priority=RequestPriority.PRIORITY_HIGHER,
-                unit_type_id=UnitTypeId.SCV,
-                operation_type_id=OperationTypeId.SCOUT
-            )
-            self.board_request.register(scout_request)
+        self.sync_bot_requests()
+        await self.trigger_bots_default_behavior(iteration)
 
-        self._sync_bot_requests()
-        await self._trigger_bots_default_behavior(iteration)
-
-    def _sync_bot_requests(self):
+    def sync_bot_requests(self):
         """ Update the requests for each bot added """
         for bot in self.bots.values():
-            bot.read_requests()
+            bot.sync_requests()
 
-    async def _trigger_bots_default_behavior(self, iteration):
+    async def trigger_bots_default_behavior(self, iteration):
         """
         :param int iteration:
         """
@@ -54,6 +46,7 @@ class HumanGod(GenericBotPlayer):
             await bot.default_behavior(iteration=iteration)
 
     def init_request_board(self):
+        """ Initialize all first requests """
         self.board_request.register(
             Request(request_priority=RequestPriority.PRIORITY_HIGHER, operation_type_id=OperationTypeId.TRAIN_SCV_ALLOW)
         )
@@ -85,4 +78,3 @@ class HumanGod(GenericBotPlayer):
             Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.SUPPLYDEPOT,
                     operation_type_id=OperationTypeId.BUILD)
         )
-
