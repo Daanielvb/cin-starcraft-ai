@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from sc2.ids.unit_typeid import UnitTypeId
 
 from core.bot.generic_bot_non_player_unit import GenericBotNonPlayerUnit
 from core.bot import util
-from core.register_board.request import RequestStatus
+from core.register_board.constants import InfoType, RequestPriority, OperationTypeId
+from core.register_board.info import Info
+from core.register_board.request import RequestStatus, Request
 
 
 class Scout(GenericBotNonPlayerUnit):
@@ -21,6 +24,7 @@ class Scout(GenericBotNonPlayerUnit):
         )
 
         self.cmd_center = None
+        self.scout_start = False
         self.current_scout = None
         self.found_enemy_base = False
         self.enemy_start_position = None
@@ -28,7 +32,6 @@ class Scout(GenericBotNonPlayerUnit):
         self.mean_location = None
         self.is_enemy_coming = False
         self.current_idle_units = None
-        self.patrol = True
         self._last_positions = list()
 
     async def default_behavior(self, iteration):
@@ -48,8 +51,6 @@ class Scout(GenericBotNonPlayerUnit):
         # TODO Evaluate to replace this method for this new one
         self.log("Setting Scout")
         if not self.current_scout:
-            # TODO: Get free scout based on BOARD info
-            # TODO: If there are not free scouts, ask the manager for one.
             self.current_scout = self.get_current_scout()
             self.set_mean_location()
 
@@ -66,16 +67,21 @@ class Scout(GenericBotNonPlayerUnit):
     def set_enemy_position(self):
         self.log("Found enemy base")
         self.enemy_start_position = self.bot_player.known_enemy_structures[0].position
-        self.found_enemy_base = True
-
-    def get_found_enemy_base(self):
-        return self.found_enemy_base
+        self.bot_player.board_info.register(Info(bot=self, value=self.enemy_start_position, type=InfoType.ENEMY_POSITION))
 
     def get_found_enemies_nearby(self):
         return self.found_enemies_nearby
 
     async def visit_enemy(self):
+        self.scout_start = True
         await self.move_scout_to(self.bot_player.enemy_start_locations[self.enemy_location_counter])
+
+    async def patrol(self):
+        self.bot_player.board_request.register(
+            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.SCV,
+                    operation_type_id=OperationTypeId.PATROL)
+        )
+        await self.visit_base()
 
     async def visit_base(self):
         self.log("Visiting base")
@@ -83,19 +89,15 @@ class Scout(GenericBotNonPlayerUnit):
 
     async def visit_middle(self):
         self.log("Visiting middle")
-        await self.move_scout_to(self.cmd_center)
+        await self.move_scout_to(util.get_mean_location(
+            self.bot_player.start_location, self.bot_player.enemy_start_locations[0]
+        ))
+
+    def is_enemy_nearby(self):
+        if self.bot_player.known_enemy_structures:
+            self.set_enemy_position()
+            return True
 
     async def scout(self):
         self.set_cmd_center()
-        # self.set_scout() TODO: Please check comments on this method definition
         await self.visit_enemy()
-
-        # Sorry :)
-        # if self.bot_player.known_enemy_structures and not self.found_enemy_base:
-        #     # TODO: Write this info on the BOARD
-        #     self.set_enemy_position()
-        #
-        # # If found enemy base, go patrolling
-        # if self.found_enemy_base:
-        #     # current scout position is not being updated, so this approach doesn't work
-        #     await self.visit_base()

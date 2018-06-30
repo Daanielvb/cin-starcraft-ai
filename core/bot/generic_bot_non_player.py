@@ -58,7 +58,7 @@ class GenericBotNonPlayer(GenericBot):
         """ Update the requests that should be handled by the bot
         :return list[core.register_board.request.Request]
         """
-        self._requests.extend(self.find_request())
+        self._requests = self.find_request()
 
     def get_scvs_unit_from_bord_info(self):
         """

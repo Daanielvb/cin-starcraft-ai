@@ -12,6 +12,7 @@ class OperationTypeId(Enum):
     SCOUT = 'SCOUT'
     DEFEND = 'DEFEND'
     BUILD = 'BUILD'
+    PATROL = 'PATROL'
 
 
 class RequestStatus(Enum):
@@ -33,3 +34,7 @@ class RequestPriority(Enum):
     PRIORITY_MEDIUM = 2
     PRIORITY_LOW = 3
     PRIORITY_LOWER = 4
+
+
+class InfoType(Enum):
+    ENEMY_POSITION = 'ENEMY_POSITION'
