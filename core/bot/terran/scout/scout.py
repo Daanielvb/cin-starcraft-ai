@@ -41,16 +41,18 @@ class Scout(GenericBotNonPlayerUnit):
 
     async def move_scout_to(self, position):
         self.log("Moving Scout")
-        await self.bot_player.do(self.get_current_scout().move(position))
+        await self.bot_player.do(
+            self.bot_player.get_current_scv_unit(self._info.unit_tag).move(position)
+        )
 
     def set_scout(self):
-        # TODO: We can get the scout using self.get_current_scout().
+        # TODO: We can get the scout using self.get_current_scv_unit().
         # TODO Evaluate to replace this method for this new one
         self.log("Setting Scout")
         if not self.current_scout:
             # TODO: Get free scout based on BOARD info
             # TODO: If there are not free scouts, ask the manager for one.
-            self.current_scout = self.get_current_scout()
+            self.current_scout = self.bot_player.get_current_scv_unit(self._info.unit_tag)
             self.set_mean_location()
 
     def set_mean_location(self):
