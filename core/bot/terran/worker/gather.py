@@ -18,12 +18,11 @@ class Gather(GenericBotNonPlayer):
 
     should_train_scv = False
 
-    def __init__(self, bot_player, border):
+    def __init__(self, bot_player):
         """
         :param core.bot.generic_bot_player.GenericBotPlayer bot_player:
         """
         super(Gather, self).__init__(bot_player)
-        self._border_info = border
         self._info = None
 
     async def default_behavior(self, iteration):

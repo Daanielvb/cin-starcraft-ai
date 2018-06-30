@@ -22,7 +22,7 @@ class HumanGod(GenericBotPlayer):
     def on_start(self):
         """ Allows initializing the bot when the game data is available """
         self.add_bot(ScoutManager(bot_player=self))
-        self.add_bot(BuildManager(bot_player=self))
+        #self.add_bot(BuildManager(bot_player=self))
         self.add_bot(GatherManager(bot_player=self))
         self.init_request_board()
 
