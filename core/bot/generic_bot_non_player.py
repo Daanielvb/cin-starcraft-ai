@@ -67,8 +67,10 @@ class GenericBotNonPlayer(GenericBot):
         scvs = []
 
         for info in self.bot_player.board_info.board:
-            if self.bot_player.get_current_scv_unit(info.unit_tag).type_id == UnitTypeId.SCV:
-                scvs.append(info.unit)
+            scv = self.bot_player.get_current_scv_unit(info.unit_tag)
+
+            if scv.type_id == UnitTypeId.SCV:
+                scvs.append(scv)
 
         return scvs
 
