@@ -10,7 +10,8 @@ class OperationTypeId(Enum):
     """
     ATTACK = 'ATTACK'
     SCOUT = 'SCOUT'
-    DEFENSE = 'DEFENSE'
+    DEFEND = 'DEFEND'
+    BUILD = 'BUILD'
 
 
 class RequestStatus(Enum):

@@ -8,6 +8,7 @@ from core.bot.generic_bot_player import GenericBotPlayer
 from core.register_board.constants import RequestPriority
 from core.register_board.constants import OperationTypeId
 from core.register_board.request import Request
+from strategy.cin_deem_team.terran.builder_manager import BuildManager
 from strategy.cin_deem_team.terran.scout_manager import ScoutManager
 
 
@@ -20,6 +21,8 @@ class HumanGod(GenericBotPlayer):
     def on_start(self):
         """ Allows initializing the bot when the game data is available """
         self.add_bot(ScoutManager(bot_player=self))
+        self.add_bot(BuildManager(bot_player=self))
+        self.init_request_board()
 
     async def default_behavior(self, iteration):
         """ The default behavior of the bot
@@ -46,4 +49,35 @@ class HumanGod(GenericBotPlayer):
         :param int iteration:
         """
         for bot in self.bots.values():
-            await bot.default_behavior(iteration)
+            await bot.default_behavior(iteration=iteration)
+
+    def init_request_board(self):
+        self.board_request.register(
+            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.SCV,
+                    operation_type_id=OperationTypeId.SCOUT)
+        )
+        self.board_request.register(
+            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.SUPPLYDEPOT,
+                    operation_type_id=OperationTypeId.BUILD)
+        )
+        self.board_request.register(
+            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.BARRACKS,
+                    operation_type_id=OperationTypeId.BUILD)
+        )
+        self.board_request.register(
+            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.BARRACKSTECHLAB,
+                    operation_type_id=OperationTypeId.BUILD)
+        )
+        self.board_request.register(
+            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.SUPPLYDEPOT,
+                    operation_type_id=OperationTypeId.BUILD)
+        )
+        self.board_request.register(
+            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.SUPPLYDEPOT,
+                    operation_type_id=OperationTypeId.BUILD)
+        )
+        self.board_request.register(
+            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.SUPPLYDEPOT,
+                    operation_type_id=OperationTypeId.BUILD)
+        )
+

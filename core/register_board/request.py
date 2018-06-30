@@ -43,6 +43,13 @@ class Request(object):
         return self._unit_type_id
 
     @property
+    def location(self):
+        """
+        :return sc2.position.Point2:
+        """
+        return self._location
+
+    @property
     def operation_type_id(self):
         """
         :return sc2.ids.unit_typeid.UnitTypeId:
