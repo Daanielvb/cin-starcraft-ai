@@ -17,6 +17,15 @@ def contains_unit(unit, unit_group):
     return False
 
 
+def get_units_tags(units):
+    """ Helper method that returns a list of unit tags"""
+    result = list()
+    for u in units:
+        result.append(u.tag)
+    return result
+
+
+
 # get the mean location between two coordinates
 def get_mean_location(pos1, pos2):
     """

@@ -14,15 +14,15 @@ from core.register_board.request import RequestStatus, Request
 class Scout(GenericBotNonPlayerUnit):
     """  A Scout bot unit class """
 
-    def __init__(self, bot_player, iteration, request, unit_tag):
+    def __init__(self, bot_player, iteration, request, unit_tags):
         """
         :param core.bot.generic_bot_player.GenericBotPlayer bot_player:
         :param int iteration:
         :param core.register_board.request.Request request:
-        :param int unit_tag:
+        :param list(int) unit_tags:
         """
         super(Scout, self).__init__(
-            bot_player=bot_player, iteration=iteration, request=request, unit_tag=unit_tag
+            bot_player=bot_player, iteration=iteration, request=request, unit_tags=unit_tags
         )
 
         self.cmd_center = None
@@ -45,7 +45,7 @@ class Scout(GenericBotNonPlayerUnit):
 
     async def move_scout_to(self, position):
         self.log("Moving Scout")
-        unit = self.bot_player.get_current_scv_unit(self._info.unit_tag)
+        unit = self.bot_player.get_current_scv_unit(self._info.unit_tags)
         if unit:
             await self.bot_player.do(unit.move(position))
         else:
@@ -87,21 +87,21 @@ class Scout(GenericBotNonPlayerUnit):
     async def visit_base(self):
         self.log("Visiting base")
         if self.bot_player.known_enemy_units.not_structure:
-            self.register_enemy_units(len(self.bot_player.known_enemy_units.not_structure))
+            self.register_enemy_units(self.bot_player.known_enemy_units.not_structure)
         await self.move_scout_to(util.add_to_location(self.cmd_center.position, randint(-9 ,9)))
 
     async def visit_middle(self):
         self.log("Visiting middle")
         # If found enemies before moving, store it on the board
         if self.bot_player.known_enemy_units.not_structure:
-            self.register_enemy_units(len(self.bot_player.known_enemy_units.not_structure))
+            self.register_enemy_units(self.bot_player.known_enemy_units.not_structure)
         await self.move_scout_to(util.add_to_location(util.get_mean_location(
             self.bot_player.start_location, self.bot_player.enemy_start_locations[0]
-        ), randint(-9 ,9)))
+        ), randint(-9, 9)))
 
-    def register_enemy_units(self, amount):
+    def register_enemy_units(self, enemy_units):
         self.bot_player.board_info.register(
-            Info(bot=self, value=amount, type=InfoType.ENEMY_NEARBY))
+            Info(bot=self, value=len(enemy_units), type=InfoType.ENEMY_NEARBY, location=enemy_units[0].position))
 
     def is_enemy_structure_nearby(self):
         if self.bot_player.known_enemy_structures:

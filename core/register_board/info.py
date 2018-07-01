@@ -5,19 +5,20 @@
 class Info(object):
     """ Request information status """
 
-    def __init__(self, bot, iteration=None, request=None, unit_tag=None, type=None, value=None):
+    def __init__(self, bot, iteration=None, request=None, unit_tags=None, type=None, value=None, location=None):
         """
         :param int iteration:
         :param core.bot.generic_bot.GenericBot bot:
         :param core.register_board.request.Request request:
-        :param int unit_tag:
+        :param list(int) unit_tags:
         """
         self._iteration = iteration
         self._bot = bot
         self._request = request
-        self._unit_tag = unit_tag
+        self._unit_tags = unit_tags
         self._type = type
         self._value = value
+        self._location = location
 
     @property
     def iteration(self):
@@ -39,6 +40,10 @@ class Info(object):
         :return core.register_board.request.Request:
         """
         return self._request
+
+    @property
+    def location(self):
+        return self._location
 
     @request.setter
     def request(self, request):
@@ -83,8 +88,8 @@ class Info(object):
         self._value = value
 
     @property
-    def unit_tag(self):
+    def unit_tags(self):
         """
         :return int:
         """
-        return self._unit_tag
+        return self._unit_tags

@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from sc2.ids.unit_typeid import UnitTypeId
 
 from core.bot.generic_bot_non_player import GenericBotNonPlayer
 from core.bot.terran.scout.scout import Scout
-from core.register_board.constants import OperationTypeId, RequestPriority
-from core.register_board.request import RequestStatus, Request
+from core.register_board.constants import OperationTypeId
+from core.register_board.request import RequestStatus
 
 
 class ScoutManager(GenericBotNonPlayer):
@@ -39,7 +38,7 @@ class ScoutManager(GenericBotNonPlayer):
                         bot_player=self.bot_player,
                         iteration=iteration,
                         request=request,
-                        unit_tag=available_scvs[0].tag
+                        unit_tags=[available_scvs[0].tag]
                     )
 
                     await self.perform_scout(iteration, self._scout_unit)

@@ -71,15 +71,26 @@ class GenericBotPlayer(GenericBot):
         """
         return player.Bot(race=self._race_type, ai=self)
 
-    def get_current_scv_unit(self, unit_tag):
+    def get_current_scv_unit(self, unit_tags):
         """ Get worker unit
         :param int unit_tag:
         :return sc2.unit.Unit:
         """
         # TODO: The unit might be dead. (Remember to test a scenario to validate it and handle it)
         for worker in self.workers:
-            if worker.tag == unit_tag:
+            if worker.tag == unit_tags[0]:
                 return worker
+
+    def get_current_units(self, unit_tags):
+        """ Get current group of unit
+        :param list(int) unit_tags:
+        :return list(sc2.unit.Unit):
+        """
+        result = list()
+        for unit in self.units:
+            if unit.tag in unit_tags:
+                result.append(unit)
+        return result
 
     def get_owned_expansions_locations(self):
         """ Get the Point2 (location) of current expansion

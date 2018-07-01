@@ -11,15 +11,15 @@ from core.register_board.constants import RequestStatus
 class Build(GenericBotNonPlayerUnit):
     """  A Scout bot class """
 
-    def __init__(self, bot_player, iteration, request, unit_tag):
+    def __init__(self, bot_player, iteration, request, unit_tags):
         """
         :param core.bot.generic_bot_player.GenericBotPlayer bot_player:
         :param int iteration:
         :param core.register_board.request.Request request:
-        :param int unit_tag:
+        :param list(int) unit_tags:
         """
         super(Build, self).__init__(
-            bot_player=bot_player, iteration=iteration, request=request, unit_tag=unit_tag
+            bot_player=bot_player, iteration=iteration, request=request, unit_tags=unit_tags
         )
 
     async def default_behavior(self, iteration):

@@ -59,3 +59,6 @@ class BoardInfo(object):
         :return list[core.register_board.info.Info]:
         """
         return self._board
+
+    def search_request_by_type(self, info_type):
+        return [info for info in self.board if info.type == info_type]
