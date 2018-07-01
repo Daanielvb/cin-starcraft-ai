@@ -5,7 +5,7 @@ from sc2.ids.ability_id import AbilityId
 from sc2.ids.unit_typeid import UnitTypeId
 
 from core.bot.generic_bot_non_player_unit import GenericBotNonPlayerUnit
-from core.bot.util import distance
+from core.register_board.constants import RequestStatus
 
 
 class Build(GenericBotNonPlayerUnit):
@@ -27,34 +27,43 @@ class Build(GenericBotNonPlayerUnit):
         :param int iteration: Game loop iteration
         """
         await self._build()
-        # await self.depot_behaviour()
+        await self.depot_behaviour()
 
     async def _build(self):
         """
         Build action
         """
-        build_type = self.info.request.unit_type_id
-        scv = self.bot_player.select_build_worker(self.info.request.location, True)
-        # await self.bot_player.do(scv.build(build_type, self.info.request.location))
-        await self.bot_player.do(scv.build(build_type, self.info.request.location))
+        if self.info.request.location:
+            build_type = self.info.request.unit_type_id
+            scv = await self.get_builder()
+            # location = self.bot_player.owned_expansions.popitem()[1].position.towards_with_random_angle(
+            #     self.bot_player.game_info.map_center, 8
+            # )
+            if self.info.request.unit_type_id == UnitTypeId.REFINERY:
+                location = self.info.request.location
+            else:
+                location = self.info.request.location.towards_with_random_angle(self.bot_player.game_info.map_center, 8)
+
+            await self.bot_player.do(scv.build(build_type, location))
+
+            self.log("########################## Request DONE: {}".format(self.info.request))
+            self.info.request.status = RequestStatus.DONE
+
+
+            # build_type, near=self.info.request.location.towards(self.bot_player.game_info.map_center, 8))
+        else:
+            self.log("Location is None to build: {}".format(self.info.request))
+
+    async def get_builder(self):
+        if not self.info.unit_tag:
+            scv = self.bot_player.select_build_worker(self.info.request.location, True)
+            self.info.unit_tag = scv.tag
+
+        return self.bot_player.get_current_scv_unit(self._info.unit_tag)
 
     async def depot_behaviour(self):
         """
         Supply depot behaviour
         """
-        enemies = self.known_enemy_units.not_structure
-
-        for depot in self.units(UnitTypeId.SUPPLYDEPOTLOWERED).ready:
-            for enemy in enemies:
-                if distance(enemy, depot) < 12:
-                    await self.do(depot(AbilityId.MORPH_SUPPLYDEPOT_RAISE))
-                    break
-
-        for depot in self.units(UnitTypeId.SUPPLYDEPOT).ready:
-            enemies_far = True
-            for enemy in enemies:
-                if distance(enemy, depot) < 16:
-                    enemies_far = False
-                    break
-            if enemies_far:
-                await self.do(depot(AbilityId.MORPH_SUPPLYDEPOT_LOWER))
+        for depot in self.bot_player.units(UnitTypeId.SUPPLYDEPOT).ready:
+            await self.bot_player.do(depot(AbilityId.MORPH_SUPPLYDEPOT_LOWER))
