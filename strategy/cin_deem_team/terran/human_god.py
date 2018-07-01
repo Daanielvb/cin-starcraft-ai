@@ -63,6 +63,10 @@ class HumanGod(GenericBotPlayer):
                     operation_type_id=OperationTypeId.BUILD)
         )
         self.board_request.register(
+            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.REFINERY,
+                    operation_type_id=OperationTypeId.BUILD)
+        )
+        self.board_request.register(
             Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.BARRACKSTECHLAB,
                     operation_type_id=OperationTypeId.BUILD)
         )
