@@ -23,5 +23,11 @@ def get_mean_location(pos1, pos2):
     return Point2((x, y))
 
 
+def add_to_location(pos, value):
+    x = pos.x + value
+    y = pos.y + value
+    return Point2((x,y))
+
+
 
 

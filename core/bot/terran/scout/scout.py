@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from random import randint
+
 from sc2.ids.unit_typeid import UnitTypeId
 
 from core.bot.generic_bot_non_player_unit import GenericBotNonPlayerUnit
@@ -86,16 +88,16 @@ class Scout(GenericBotNonPlayerUnit):
         self.log("Visiting base")
         if self.bot_player.known_enemy_units.not_structure:
             self.register_enemy_units(len(self.bot_player.known_enemy_units.not_structure))
-        await self.move_scout_to(self.cmd_center.position)
+        await self.move_scout_to(util.add_to_location(self.cmd_center.position, randint(-9 ,9)))
 
     async def visit_middle(self):
         self.log("Visiting middle")
         # If found enemies before moving, store it on the board
         if self.bot_player.known_enemy_units.not_structure:
             self.register_enemy_units(len(self.bot_player.known_enemy_units.not_structure))
-        await self.move_scout_to(util.get_mean_location(
+        await self.move_scout_to(util.add_to_location(util.get_mean_location(
             self.bot_player.start_location, self.bot_player.enemy_start_locations[0]
-        ))
+        ), randint(-9 ,9)))
 
     def register_enemy_units(self, amount):
         self.bot_player.board_info.register(
