@@ -71,7 +71,6 @@ class GenericBotNonPlayer(GenericBot):
 
             if scv.type_id == UnitTypeId.SCV:
                 scvs.append(scv)
-
         return scvs
 
     def find_available_scvs_units(self):

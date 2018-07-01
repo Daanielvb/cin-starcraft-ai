@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from numpy import random
 
 from core.bot.generic_bot_non_player import GenericBotNonPlayer
 from core.bot.terran.build.build import Build
 from core.register_board.constants import OperationTypeId
 from strategy.cin_deem_team.terran.build_dependencies import *
+
+from core.bot.util import get_mean_location
 
 
 class BuildManager(GenericBotNonPlayer):
@@ -15,7 +18,10 @@ class BuildManager(GenericBotNonPlayer):
         :param core.bot.generic_bot_player.GenericBotPlayer bot_player:
         """
         super(BuildManager, self).__init__(bot_player)
-        self.add_bot(Build(bot_player, self.board_info))
+        self._build_unit = None
+
+    def requests_status_update(self):
+        pass
 
     def find_request(self):
         """ Implements the logic to find the requests that should be handled by the bot
@@ -23,22 +29,25 @@ class BuildManager(GenericBotNonPlayer):
         """
         return self.bot_player.board_request.search_request_by_operation_id(OperationTypeId.BUILD)
 
-    async def default_behavior(self, iteration):
-        """ The default behavior of the bot
+    async def requests_handler(self, iteration):
+        """ Logic to go through the bot requests
         :param int iteration: Game loop iteration
         """
         for request in self.requests:
+            if not self._build_unit:
+                available_scvs = self.find_available_scvs_units()
+
+                if available_scvs:
+                    self._build_unit = Build(
+                        bot_player=self.bot_player,
+                        iteration=iteration,
+                        request=request,
+                        unit_tag=available_scvs[0].tag
+                    )
+
             if await self._check_dependencies(request):
-                await self.perform_build(iteration)
-
-    async def perform_build(self, iteration):
-        """
-        :param int iteration: Game loop iteration
-        """
-        build_bot = self.bots.get(Build.__name__)
-
-        if iteration == 0:
-            await build_bot.default_behavior(iteration)
+                self._set_best_location(request)
+                await self._build_unit.default_behavior(iteration)
 
     async def _check_dependencies(self, request):
         """
@@ -48,64 +57,83 @@ class BuildManager(GenericBotNonPlayer):
         """
         requested_unit = request.unit_type_id
         request_dependencies = DEPENDENCIES.get(requested_unit)
-        result = False
+        can_build = True
 
-        if not request_dependencies:
-            result = await self.bot_player.can_afford(requested_unit)
-
-            supply_dependencies = request_dependencies[SUPPLY]
-            result = await self.check_build_dependencies(supply_dependencies, result)
-
-            tech_dependencies = request_dependencies[TECHNOLOGY]
-            result = await self.check_technology_dependencies(tech_dependencies, result)
+        if request_dependencies:
+            can_build = self.bot_player.can_afford(requested_unit)
+            can_build = can_build.can_afford_minerals and can_build.can_afford_vespene
 
             build_dependencies = request_dependencies[BUILD]
-            result = await self.check_supply_dependencies(build_dependencies, result)
+            can_build = await self.check_build_dependencies(build_dependencies, can_build)
 
-        return result
+            tech_dependencies = request_dependencies[TECHNOLOGY]
+            can_build = await self.check_technology_dependencies(tech_dependencies, can_build)
 
-    async def check_supply_dependencies(self, supply_dependencies, result):
+            supply_dependencies = request_dependencies[SUPPLY]
+            can_build = await self.check_supply_dependencies(supply_dependencies, can_build)
+
+        return can_build
+
+    async def check_supply_dependencies(self, supply_dependencies, can_build):
         """
         Check supply dependencies
         :param supply_dependencies:
-        :param result:
+        :param can_build:
         :return:
         """
-        if await self.bot_player.supply_left > supply_dependencies:
+        if self.bot_player.supply_left > supply_dependencies:
             pass
         else:
             # register needed of supply
-            result = False
-        return result
+            can_build = False
+        return can_build
 
-    async def check_technology_dependencies(self, tech_dependencies, result):
+    async def check_technology_dependencies(self, tech_dependencies, can_build):
         """
         Check technology dependencies
         :param tech_dependencies:
-        :param result:
+        :param can_build:
         :return:
         """
         for dependency in tech_dependencies:
-            if await self.bot_player.get_available_abilities(dependency).amount > 0:
-                result = result and True
+            if self.bot_player.get_available_abilities(dependency).amount > 0:
+                can_build = can_build and True
             else:
                 # register needed technology
-                result = False
+                can_build = False
                 break
-        return result
+        return can_build
 
-    async def check_build_dependencies(self, build_dependencies, result):
+    async def check_build_dependencies(self, build_dependencies, can_build):
         """
         Check build dependencies
         :param build_dependencies:
-        :param result:
+        :param can_build:
         :return:
         """
         for dependency in build_dependencies:
-            if await self.bot_player.units(dependency).amount > 0:
-                result = result and True
+            if self.bot_player.units(dependency).amount > 0:
+                can_build = can_build and True
             else:
                 # register needed unit
-                result = False
+                can_build = False
                 break
-        return result
+        return can_build
+
+    def _set_best_location(self, request):
+        """
+        Set best location to build
+        :param core.register_board.request.Request request:
+        """
+        if request.unit_type_id == UnitTypeId.SUPPLYDEPOT:
+            # Get the Point2 (location) of current expansion
+            our_expansion = list(self.bot_player.owned_expansions.keys())[0]
+
+            # Get all the minerals and vespine positions around our expansion
+            resources_list = list(self.bot_player.expansion_locations.get(our_expansion))
+            resource_location = resources_list[random.randint(0, len(resources_list)-1)]
+            # request.location = resource_location.position
+            cmdcenter = self.bot_player.units.structure[0]
+
+            request.location = get_mean_location(resource_location.position, cmdcenter.position)
+

@@ -3,69 +3,51 @@
 from sc2.ids.ability_id import AbilityId
 from sc2.ids.unit_typeid import UnitTypeId
 
-from core.bot.generic_bot_non_player import GenericBotNonPlayer
+from core.bot.generic_bot_non_player_unit import GenericBotNonPlayerUnit
 from core.bot.util import distance
-from core.register_board.constants import RequestStatus
-from core.register_board.info import Info
 
 
-class Build(GenericBotNonPlayer):
+class Build(GenericBotNonPlayerUnit):
     """  A Scout bot class """
 
-    def __init__(self, bot_player, border):
+    def __init__(self, bot_player, iteration, request, unit_tag):
         """
         :param core.bot.generic_bot_player.GenericBotPlayer bot_player:
+        :param int iteration:
+        :param core.register_board.request.Request request:
+        :param int unit_tag:
         """
-        super(Build, self).__init__(bot_player)
-        self._border_info = border
-        self._info = None
+        super(Build, self).__init__(
+            bot_player=bot_player, iteration=iteration, request=request, unit_tag=unit_tag
+        )
 
     async def default_behavior(self, iteration):
         """ The default behavior of the bot
         :param int iteration: Game loop iteration
         """
-        if iteration == 0:
-            # self._info = Info(iteration=iteration, bot=self, request=request, status='START')
-            # self.bot_player.board_info.register(self._info)
-            # await self._build(request)
-            pass
+        await self._build()
+        # await self.depot_behaviour()
 
-    async def _build(self, request):
+    async def _build(self):
         """
         Build action
-        :param core.register_board.request.Request request:
         """
-        build_type = request.unit_type_id
-        if (self.can_afford(build_type) and self.check_number_of(build_type) < 200
-                and not self.already_pending(build_type)):
+        build_type = self.info.request.unit_type_id
+        scv = self.bot_player.select_build_worker(self.info.request.location, True)
+        await self.bot_player.do(scv.build(build_type, self.info.request.location))
 
-            if request.location is not None:
-                scv = self.bot_player.select_build_worker(request.location, True)
-                await self.bot_player.do(scv.build(build_type, request.location))
-
-    def can_afford(self, type):
-        return self.bot_player.can_afford(type)
-
-    def check_number_of(self, type):
-        return self.bot_player.units(type).amount
-
-    def already_pending(self, type):
-        return self.bot_player.already_pending(type)
-
-    async def depot_behaviour(self, request):
+    async def depot_behaviour(self):
         """
         Supply depot behaviour
-        :param request:
         """
         enemies = self.known_enemy_units.not_structure
-        # Verifica se deve levantar a defesa suply depot
+
         for depot in self.units(UnitTypeId.SUPPLYDEPOTLOWERED).ready:
             for enemy in enemies:
                 if distance(enemy, depot) < 12:
                     await self.do(depot(AbilityId.MORPH_SUPPLYDEPOT_RAISE))
                     break
 
-        # Verifica se deve abaixar a defesa do suply depot
         for depot in self.units(UnitTypeId.SUPPLYDEPOT).ready:
             enemies_far = True
             for enemy in enemies:
