@@ -81,6 +81,19 @@ class GenericBotPlayer(GenericBot):
             if worker.tag == unit_tag:
                 return worker
 
+    def get_owned_expansions_locations(self):
+        """ Get the Point2 (location) of current expansion
+        :return list[sc2.position.Point2]:
+        """
+        return list(self.owned_expansions.keys())
+
+    def get_resources_locations(self, expansion_location):
+        """ Get all the Minerals and Vespene Geysers positions around our expansion
+        :param sc2.position.Point2 expansion_location:
+        :return list[sc2.unit.Unit]:
+        """
+        return list(self.expansion_locations.get(expansion_location))
+
     def on_start(self):
         """ Allows initializing the bot when the game data is available """
         raise NotImplementedError
