@@ -5,7 +5,7 @@
 class Info(object):
     """ Request information status """
 
-    def __init__(self, iteration, bot, request, unit_tag):
+    def __init__(self, bot, iteration=None, request=None, unit_tag=None, type=None, value=None):
         """
         :param int iteration:
         :param core.bot.generic_bot.GenericBot bot:
@@ -16,6 +16,9 @@ class Info(object):
         self._bot = bot
         self._request = request
         self._unit_tag = unit_tag
+        self._type = type
+        self._value = value
+
 
     @property
     def iteration(self):
@@ -44,6 +47,14 @@ class Info(object):
         :return core.register_board.request.RequestStatus:
         """
         return self._request.status
+
+    @property
+    def type(self):
+        return self._request.type
+
+    @property
+    def value(self):
+        return self._request.value
 
     @status.setter
     def status(self, status):

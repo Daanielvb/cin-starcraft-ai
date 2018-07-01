@@ -58,7 +58,7 @@ class GenericBotNonPlayer(GenericBot):
         """ Update the requests that should be handled by the bot
         :return list[core.register_board.request.Request]
         """
-        self._requests.extend(self.find_request())
+        self._requests = self.find_request()
 
     def get_scvs_unit_from_bord_info(self):
         """
@@ -69,7 +69,7 @@ class GenericBotNonPlayer(GenericBot):
         for info in self.bot_player.board_info.board:
             scv = self.bot_player.get_current_scv_unit(info.unit_tag)
 
-            if scv.type_id == UnitTypeId.SCV:
+            if scv and scv.type_id == UnitTypeId.SCV:
                 scvs.append(scv)
 
         return scvs

@@ -52,7 +52,11 @@ class GenericBotNonPlayerUnit(GenericBot):
         """
         :return bool:
         """
-        return self.bot_player.get_current_scv_unit(self._info.unit_tag).is_idle
+        unit = self.bot_player.get_current_scv_unit(self._info.unit_tag)
+        if unit:
+            return unit.is_idle
+        else:
+            return False
 
     async def default_behavior(self, iteration):
         """ The default behavior of the bot

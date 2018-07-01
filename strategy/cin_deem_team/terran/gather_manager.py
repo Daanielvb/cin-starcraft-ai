@@ -10,6 +10,8 @@ from strategy.cin_deem_team.terran.build_dependencies import *
 class GatherManager(GenericBotNonPlayer):
     """ Build manager class """
 
+    processed_requests = []
+
     def __init__(self, bot_player):
         """
         :param core.bot.generic_bot_player.GenericBotPlayer bot_player:
@@ -26,17 +28,19 @@ class GatherManager(GenericBotNonPlayer):
         deny_train = self.bot_player.board_request.search_request_by_operation_id(OperationTypeId.TRAIN_SCV_DENY)
         return allow_train + deny_train
 
-    async def default_behavior(self, iteration):
-        """ The default behavior of the bot
-        :param int iteration: Game loop iteration
-        """
+    def requests_status_update(self):
+        """ Logic to update the requests status """
+        for request in self.processed_requests:
+            self.bot_player.board_request.remove(request)
+        self.processed_requests.clear()
+
+    async def requests_handler(self, iteration):
         for request in self.requests:
-            print("REQUEST OK!!")
             if request.operation_type_id == OperationTypeId.TRAIN_SCV_ALLOW:
                 await self.toggle_train_scv(True)
             else:
                 await self.toggle_train_scv(False)
-            self.bot_player.board_request.remove(request)
+            self.processed_requests = self.processed_requests + [request]
 
         await self.update_gather(iteration)
 

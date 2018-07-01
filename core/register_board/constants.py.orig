@@ -12,9 +12,12 @@ class OperationTypeId(Enum):
     SCOUT = 'SCOUT'
     DEFEND = 'DEFEND'
     BUILD = 'BUILD'
-    PATROL = 'PATROL'
+<<<<<<< HEAD
     TRAIN_SCV_ALLOW = 'ALLOW SCV'
     TRAIN_SCV_DENY = 'DENY SCV'
+=======
+    PATROL = 'PATROL'
+>>>>>>> ba01a5e41138dcdfd34d99eb77ec4c58bc86e990
 
 
 class RequestStatus(Enum):
@@ -25,7 +28,6 @@ class RequestStatus(Enum):
     ON_GOING = "ON GOING"
     DONE = "DONE"
     DISMISSED = "DISMISSED"
-    FAILED = "FAILED"
 
 
 class RequestPriority(Enum):
