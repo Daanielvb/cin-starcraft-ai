@@ -40,7 +40,6 @@ class GenericBot(bot_ai.BotAI):
         """ Ran on every game step (looped in real-time mode).
         :param int iteration: Game loop iteration
         """
-        self.log("Iteration #{}".format(iteration))
         await self.default_behavior(iteration)
 
     async def default_behavior(self, iteration):

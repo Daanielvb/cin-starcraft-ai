@@ -81,6 +81,17 @@ class GenericBotPlayer(GenericBot):
             if worker.tag == unit_tag:
                 return worker
 
+    def get_current_units(self, unit_tags):
+        """ Get current group of unit
+        :param list(int) unit_tags:
+        :return list(sc2.unit.Unit):
+        """
+        result = list()
+        for unit in self.units:
+            if unit.tag in unit_tags:
+                result.append(unit)
+        return result
+
     def get_owned_expansions_locations(self):
         """ Get the Point2 (location) of current expansion
         :return list[sc2.position.Point2]:

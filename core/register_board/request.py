@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import json
+
 from core.register_board.constants import RequestStatus
 
 
@@ -9,7 +11,7 @@ class Request(object):
 
     def __init__(self, request_priority, location=None, unit_type_id=None, operation_type_id=None):
         """
-        :param core.request_board.request_priority.RequestPriority request_priority:
+        :param core.register_board.constants.RequestPriority request_priority:
         :param sc2.position.Point2 location:
         :param sc2.ids.unit_typeid.UnitTypeId unit_type_id:
         :param core.register_board.constants.OperationTypeId operation_type_id:
@@ -22,11 +24,13 @@ class Request(object):
         self._status = RequestStatus.TO_BE_DONE
 
     def __str__(self):
-        return str(
+        return json.dumps(
             dict(
-                operation_type_id=self._operation_type_id,
-                unit_type_id=self._unit_type_id,
-                request_priority_level=self._request_priority_level
+                request_id=self._request_id,
+                operation_type_id=self._operation_type_id.name if self._operation_type_id else '',
+                unit_type_id=self._unit_type_id.name if self._unit_type_id else '',
+                request_priority_level=self._request_priority_level.name,
+                status=self._status.name
             )
         )
 

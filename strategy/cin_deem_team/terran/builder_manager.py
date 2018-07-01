@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 from numpy import random
+from sc2.unit import UnitTypeId
+from s2clientprotocol import common_pb2
 
 from core.bot.generic_bot_non_player import GenericBotNonPlayer
 from core.bot.terran.build.build import Build
-from core.register_board.constants import OperationTypeId
-from strategy.cin_deem_team.terran.build_dependencies import *
+from core.register_board.constants import OperationTypeId, RequestStatus
 
 from core.bot.util import get_mean_location
 
@@ -20,9 +22,6 @@ class BuildManager(GenericBotNonPlayer):
         super(BuildManager, self).__init__(bot_player)
         self._build_unit = None
 
-    def requests_status_update(self):
-        pass
-
     def find_request(self):
         """ Implements the logic to find the requests that should be handled by the bot
         :return list[core.register_board.request.Request]
@@ -35,100 +34,69 @@ class BuildManager(GenericBotNonPlayer):
         """
         for request in self.requests:
             if not self._build_unit:
-                available_scvs = self.find_available_scvs_units()
+                self.set_build_unit(iteration=iteration, request=request)
 
-                if available_scvs:
-                    self._build_unit = Build(
-                        bot_player=self.bot_player,
-                        iteration=iteration,
-                        request=request,
-                        unit_tag=available_scvs[0].tag
-                    )
+            elif self._build_unit and (not self._build_unit.request or self._build_unit.request.status == RequestStatus.DONE):
+                self._build_unit.set_request(request)
 
-            if await self._check_dependencies(request):
+            if self._build_unit.request.status == RequestStatus.TO_BE_DONE:
                 self._set_best_location(request)
                 await self._build_unit.default_behavior(iteration)
 
-    async def _check_dependencies(self, request):
+    def requests_status_update(self):
+        """ Logic to update the requests status """
+        if self._build_unit:
+            orders = self.bot_player.get_current_scv_unit(self._build_unit.unit_tags[0]).orders
+
+            for order in orders:
+                target_unit = self.get_target_unit(order)
+                request_status = self._build_unit.info.request.status
+
+                if target_unit and not target_unit.is_ready and request_status != RequestStatus.ON_GOING:
+                    self.log('Starting request: {}'.format(self._build_unit.info.request))
+                    self._build_unit.info.request.status = RequestStatus.ON_GOING
+
+                elif target_unit and target_unit.is_ready:
+                    self._build_unit.info.request.status = RequestStatus.DONE
+                    self.bot_player.board_request.remove(self._build_unit.info.request)
+
+    def get_target_unit(self, order):
         """
-        Check request dependencies.
-        :param core.register_board.request.Request: request
-        :return bool:
-        """
-        requested_unit = request.unit_type_id
-        request_dependencies = DEPENDENCIES.get(requested_unit)
-        can_build = True
-
-        if request_dependencies:
-            can_build = self.bot_player.can_afford(requested_unit)
-            can_build = can_build.can_afford_minerals and can_build.can_afford_vespene
-
-            build_dependencies = request_dependencies[BUILD]
-            can_build = await self.check_build_dependencies(build_dependencies, can_build)
-
-            tech_dependencies = request_dependencies[TECHNOLOGY]
-            can_build = await self.check_technology_dependencies(tech_dependencies, can_build)
-
-            supply_dependencies = request_dependencies[SUPPLY]
-            can_build = await self.check_supply_dependencies(supply_dependencies, can_build)
-
-        return can_build
-
-    async def check_supply_dependencies(self, supply_dependencies, can_build):
-        """
-        Check supply dependencies
-        :param supply_dependencies:
-        :param can_build:
+        :param order:
         :return:
         """
-        if self.bot_player.supply_left > supply_dependencies:
-            pass
-        else:
-            # register needed of supply
-            can_build = False
-        return can_build
+        if isinstance(order.target, common_pb2.Point):
+            return self.bot_player.get_units_by_position(
+                position_x=order.target.x,
+                position_y=order.target.y
+            )
 
-    async def check_technology_dependencies(self, tech_dependencies, can_build):
-        """
-        Check technology dependencies
-        :param tech_dependencies:
-        :param can_build:
-        :return:
-        """
-        for dependency in tech_dependencies:
-            if self.bot_player.get_available_abilities(dependency).amount > 0:
-                can_build = can_build and True
-            else:
-                # register needed technology
-                can_build = False
-                break
-        return can_build
-
-    async def check_build_dependencies(self, build_dependencies, can_build):
-        """
-        Check build dependencies
-        :param build_dependencies:
-        :param can_build:
-        :return:
-        """
-        for dependency in build_dependencies:
-            if self.bot_player.units(dependency).amount > 0:
-                can_build = can_build and True
-            else:
-                # register needed unit
-                can_build = False
-                break
-        return can_build
-
-    def _set_best_location(self, request):
-        """
-        Set best location to build
+    def set_build_unit(self, iteration, request):
+        """ Sets a unit for the build unit
+        :param int iteration: Game loop iteration
         :param core.register_board.request.Request request:
         """
-        if request.unit_type_id == UnitTypeId.SUPPLYDEPOT:
+        self.log('Setting unit to Build bot unit')
+        available_scvs = self.find_available_scvs_units()
+
+        if available_scvs:
+            self._build_unit = Build(
+                bot_player=self.bot_player,
+                iteration=iteration,
+                request=request,
+                unit_tags=[available_scvs[0].tag]
+            )
+
+    def _set_best_location(self, request):
+        """ Sets best location to build
+        :param core.register_board.request.Request request:
+        """
+        if request.unit_type_id == UnitTypeId.REFINERY:
+            request.location = self.bot_player.state.vespene_geyser.closest_to(self.bot_player.start_location)
+        else:
             our_expansion = self.bot_player.get_owned_expansions_locations()[0]
             resources_list = self.bot_player.get_resources_locations(our_expansion)
             resource_location = resources_list[random.randint(0, len(resources_list)-1)]
-            command_center = self.bot_player.units.structure[0]
+            # command_center = self.bot_player.units.structure[0]
+            command_center = self.bot_player.owned_expansions.popitem()[1]
             request.location = get_mean_location(resource_location.position, command_center.position)
-

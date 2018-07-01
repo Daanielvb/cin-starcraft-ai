@@ -67,7 +67,7 @@ class GenericBotNonPlayer(GenericBot):
         scvs = []
 
         for info in self.bot_player.board_info.board:
-            scv = self.bot_player.get_current_scv_unit(info.unit_tag)
+            scv = self.bot_player.get_current_scv_unit(info.unit_tags)
 
             if scv and scv.type_id == UnitTypeId.SCV:
                 scvs.append(scv)
@@ -88,3 +88,18 @@ class GenericBotNonPlayer(GenericBot):
             available_scvs = list(set(all_scvs) - set(scvs_from_board_info))
 
         return available_scvs
+
+    def find_available_defense_units(self):
+        """
+        :return list[sc2.unit.Unit]:
+        """
+        units = []
+
+        for info in self.bot_player.board_info.board:
+            units = self.bot_player.get_current_units(info.unit_tags)
+
+            if units:
+                for unit in units:
+                    if unit.type_id == UnitTypeId.MARINE or unit.type.id == UnitTypeId.MARAUDER:
+                        units.append(unit)
+        return units

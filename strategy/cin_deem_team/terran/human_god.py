@@ -8,6 +8,7 @@ from core.bot.generic_bot_player import GenericBotPlayer
 from core.register_board.constants import RequestPriority
 from core.register_board.constants import OperationTypeId
 from core.register_board.request import Request
+from strategy.cin_deem_team.terran.defense_manager import DefenseManager
 from strategy.cin_deem_team.terran.gather_manager import GatherManager
 from strategy.cin_deem_team.terran.builder_manager import BuildManager
 from strategy.cin_deem_team.terran.scout_manager import ScoutManager
@@ -24,7 +25,25 @@ class HumanGod(GenericBotPlayer):
         self.add_bot(ScoutManager(bot_player=self))
         self.add_bot(BuildManager(bot_player=self))
         self.add_bot(GatherManager(bot_player=self))
+        #self.add_bot(DefenseManager(bot_player=self))
         self.init_request_board()
+
+    def get_units_by_type(self, types):
+        """
+        :param list[UnitTypeId] types:
+        :return list[sc2.unit.Unit]:
+        """
+        return [unit for unit in self.units if unit.type_id in types]
+
+    def get_units_by_position(self, position_x, position_y):
+        """
+        :param float position_x:
+        :param float position_y:
+        :return sc2.unit.Unit:
+        """
+        for unit in self.units:
+            if [unit.position.x, unit.position.y] == [position_x, position_y]:
+                return unit
 
     async def default_behavior(self, iteration):
         """ The default behavior of the bot
@@ -56,6 +75,10 @@ class HumanGod(GenericBotPlayer):
         )
         self.board_request.register(
             Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.SUPPLYDEPOT,
+                    operation_type_id=OperationTypeId.BUILD)
+        )
+        self.board_request.register(
+            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.REFINERY,
                     operation_type_id=OperationTypeId.BUILD)
         )
         self.board_request.register(
