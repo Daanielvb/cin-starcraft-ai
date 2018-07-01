@@ -24,7 +24,6 @@ class Scout(GenericBotNonPlayerUnit):
         )
 
         self.cmd_center = None
-        self.scout_start = False
         self.current_scout = None
         self.found_enemy_base = False
         self.enemy_start_position = None
@@ -44,7 +43,9 @@ class Scout(GenericBotNonPlayerUnit):
 
     async def move_scout_to(self, position):
         self.log("Moving Scout")
-        await self.bot_player.do(self.get_current_scout().move(position))
+        await self.bot_player.do(
+            self.bot_player.get_current_scv_unit(self._info.unit_tag).move(position)
+        )
 
     def set_scout(self):
         # TODO: We can get the scout using self.get_current_scout().

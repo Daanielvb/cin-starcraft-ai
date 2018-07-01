@@ -71,6 +71,16 @@ class GenericBotPlayer(GenericBot):
         """
         return player.Bot(race=self._race_type, ai=self)
 
+    def get_current_scv_unit(self, unit_tag):
+        """ Get worker unit
+        :param int unit_tag:
+        :return sc2.unit.Unit:
+        """
+        # TODO: The unit might be dead. (Remember to test a scenario to validate it and handle it)
+        for worker in self.workers:
+            if worker.tag == unit_tag:
+                return worker
+
     def on_start(self):
         """ Allows initializing the bot when the game data is available """
         raise NotImplementedError

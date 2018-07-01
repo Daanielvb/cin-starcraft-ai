@@ -48,20 +48,11 @@ class GenericBotNonPlayerUnit(GenericBot):
         """
         return self._unit_tag
 
-    def get_current_scout(self):
-        """ Get current scout unit from Workers
-        :return sc2.unit.Unit
-        """
-        # TODO: The unit might be dead. (Remember to test a scenario to validate it and handle it)
-        for unit in self.bot_player.workers:
-            if unit.tag == self.unit_tag:
-                return unit
-
     def is_idle(self):
         """
         :return bool:
         """
-        return self.get_current_scout().is_idle
+        return self.bot_player.get_current_scv_unit(self._info.unit_tag).is_idle
 
     async def default_behavior(self, iteration):
         """ The default behavior of the bot
