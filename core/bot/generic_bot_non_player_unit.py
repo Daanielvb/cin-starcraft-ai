@@ -42,6 +42,19 @@ class GenericBotNonPlayerUnit(GenericBot):
         return self._info
 
     @property
+    def request(self):
+        """
+        :return core.register_board.request.Request:
+        """
+        return self._info.request
+
+    def set_request(self, request):
+        """
+        :param core.register_board.request.Request request:
+        """
+        self._info.request = request
+
+    @property
     def unit_tag(self):
         """
         :return int:

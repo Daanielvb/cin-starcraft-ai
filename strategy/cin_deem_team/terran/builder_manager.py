@@ -4,7 +4,7 @@ from numpy import random
 
 from core.bot.generic_bot_non_player import GenericBotNonPlayer
 from core.bot.terran.build.build import Build
-from core.register_board.constants import OperationTypeId
+from core.register_board.constants import OperationTypeId, RequestStatus
 from strategy.cin_deem_team.terran.build_dependencies import *
 
 from core.bot.util import get_mean_location
@@ -20,9 +20,6 @@ class BuildManager(GenericBotNonPlayer):
         super(BuildManager, self).__init__(bot_player)
         self._build_unit = None
 
-    def requests_status_update(self):
-        pass
-
     def find_request(self):
         """ Implements the logic to find the requests that should be handled by the bot
         :return list[core.register_board.request.Request]
@@ -34,9 +31,10 @@ class BuildManager(GenericBotNonPlayer):
         :param int iteration: Game loop iteration
         """
         for request in self.requests:
+            self.log(request)
             if not self._build_unit:
                 available_scvs = self.find_available_scvs_units()
-
+                self.log("Request to build {}".format(request.unit_type_id))
                 if available_scvs:
                     self._build_unit = Build(
                         bot_player=self.bot_player,
@@ -44,10 +42,24 @@ class BuildManager(GenericBotNonPlayer):
                         request=request,
                         unit_tag=available_scvs[0].tag
                     )
+            elif self._build_unit and (
+                    not self._build_unit.request or self._build_unit.request.status == RequestStatus.DONE):
 
-            if await self._check_dependencies(request):
+                self.log("New request={} to unit={}".format(request.request_id, self._build_unit.unit_tag))
+                self._build_unit.set_request(request)
+
+            if self._build_unit.request.status == RequestStatus.TO_BE_DONE and await self._check_dependencies(request):
                 self._set_best_location(request)
+                self.log(request)
                 await self._build_unit.default_behavior(iteration)
+
+    def requests_status_update(self):
+        if self._build_unit:
+            if self._build_unit.info.request.status != RequestStatus.FAILED \
+                    and self._build_unit.info.request.status != RequestStatus.DONE:
+                if self._build_unit.is_idle():
+                    self.bot_player.board_request.remove(self._build_unit.info.request)
+                    self._build_unit.info.status = RequestStatus.DONE
 
     async def _check_dependencies(self, request):
         """
@@ -64,13 +76,13 @@ class BuildManager(GenericBotNonPlayer):
             can_build = can_build.can_afford_minerals and can_build.can_afford_vespene
 
             build_dependencies = request_dependencies[BUILD]
-            can_build = await self.check_build_dependencies(build_dependencies, can_build)
+            can_build = can_build and await self.check_build_dependencies(build_dependencies, can_build)
 
             tech_dependencies = request_dependencies[TECHNOLOGY]
-            can_build = await self.check_technology_dependencies(tech_dependencies, can_build)
+            can_build = can_build and await self.check_technology_dependencies(tech_dependencies, can_build)
 
             supply_dependencies = request_dependencies[SUPPLY]
-            can_build = await self.check_supply_dependencies(supply_dependencies, can_build)
+            can_build = can_build and await self.check_supply_dependencies(supply_dependencies, can_build)
 
         return can_build
 
@@ -125,10 +137,12 @@ class BuildManager(GenericBotNonPlayer):
         Set best location to build
         :param core.register_board.request.Request request:
         """
-        if request.unit_type_id == UnitTypeId.SUPPLYDEPOT:
+        if request.unit_type_id == UnitTypeId.REFINERY:
+            request.location = self.bot_player.state.vespene_geyser.closest_to(self.bot_player.start_location)
+        else:
             our_expansion = self.bot_player.get_owned_expansions_locations()[0]
             resources_list = self.bot_player.get_resources_locations(our_expansion)
             resource_location = resources_list[random.randint(0, len(resources_list)-1)]
-            command_center = self.bot_player.units.structure[0]
+            # command_center = self.bot_player.units.structure[0]
+            command_center = self.bot_player.owned_expansions.popitem()[1]
             request.location = get_mean_location(resource_location.position, command_center.position)
-

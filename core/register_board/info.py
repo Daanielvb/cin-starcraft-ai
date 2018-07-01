@@ -40,6 +40,13 @@ class Info(object):
         """
         return self._request
 
+    @request.setter
+    def request(self, request):
+        """
+        :param core.register_board.request.Request request:
+        """
+        self._request = request
+
     @property
     def status(self):
         """
