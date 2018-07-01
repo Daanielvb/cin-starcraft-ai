@@ -40,12 +40,12 @@ class BuildManager(GenericBotNonPlayer):
                         bot_player=self.bot_player,
                         iteration=iteration,
                         request=request,
-                        unit_tag=available_scvs[0].tag
+                        unit_tags=[available_scvs[0].tag]
                     )
             elif self._build_unit and (
                     not self._build_unit.request or self._build_unit.request.status == RequestStatus.DONE):
 
-                self.log("New request={} to unit={}".format(request.request_id, self._build_unit.unit_tag))
+                self.log("New request={} to unit={}".format(request.request_id, self._build_unit.unit_tags[0]))
                 self._build_unit.set_request(request)
 
             if self._build_unit.request.status == RequestStatus.TO_BE_DONE and await self._check_dependencies(request):

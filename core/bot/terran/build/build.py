@@ -55,11 +55,11 @@ class Build(GenericBotNonPlayerUnit):
             self.log("Location is None to build: {}".format(self.info.request))
 
     async def get_builder(self):
-        if not self.info.unit_tag:
+        if not self.info.unit_tags:
             scv = self.bot_player.select_build_worker(self.info.request.location, True)
-            self.info.unit_tag = scv.tag
+            self.info.unit_tags = scv.tag
 
-        return self.bot_player.get_current_scv_unit(self._info.unit_tag)
+        return self.bot_player.get_current_scv_unit(self._info.unit_tags)
 
     async def depot_behaviour(self):
         """
