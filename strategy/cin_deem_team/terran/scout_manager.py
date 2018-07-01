@@ -45,7 +45,7 @@ class ScoutManager(GenericBotNonPlayer):
                     await self.perform_scout(iteration, self._scout_unit)
             else:
                 if request.status == RequestStatus.ON_GOING and request.operation_type_id == OperationTypeId.SCOUT:
-                    if self._scout_unit.is_enemy_nearby():
+                    if self._scout_unit.is_enemy_structure_nearby():
                         request.status = RequestStatus.DONE
                         await self._scout_unit.patrol()
                 elif request.operation_type_id == OperationTypeId.PATROL:

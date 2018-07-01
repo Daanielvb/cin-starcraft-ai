@@ -72,11 +72,7 @@ class Scout(GenericBotNonPlayerUnit):
         self.enemy_start_position = self.bot_player.known_enemy_structures[0].position
         self.bot_player.board_info.register(Info(bot=self, value=self.enemy_start_position, type=InfoType.ENEMY_POSITION))
 
-    def get_found_enemies_nearby(self):
-        return self.found_enemies_nearby
-
     async def visit_enemy(self):
-        self.scout_start = True
         await self.move_scout_to(self.bot_player.enemy_start_locations[self.enemy_location_counter])
 
     async def patrol(self):
@@ -88,15 +84,29 @@ class Scout(GenericBotNonPlayerUnit):
 
     async def visit_base(self):
         self.log("Visiting base")
-        await self.move_scout_to(self.cmd_center)
+        if self.bot_player.known_enemy_units.not_structure:
+            self.register_enemy_units(len(self.bot_player.known_enemy_units.not_structure))
+        await self.move_scout_to(self.cmd_center.position)
 
     async def visit_middle(self):
         self.log("Visiting middle")
+        # If found enemies before moving, store it on the board
+        if self.bot_player.known_enemy_units.not_structure:
+            self.register_enemy_units(len(self.bot_player.known_enemy_units.not_structure))
         await self.move_scout_to(util.get_mean_location(
             self.bot_player.start_location, self.bot_player.enemy_start_locations[0]
         ))
 
-    def is_enemy_nearby(self):
+    def register_enemy_units(self, amount):
+        self.bot_player.board_info.register(
+            Info(bot=self, value=amount, type=InfoType.ENEMY_NEARBY))
+
+    def is_enemy_structure_nearby(self):
+        if self.bot_player.known_enemy_structures:
+            self.set_enemy_position()
+            return True
+
+    def is_enemy_units_nearby(self):
         if self.bot_player.known_enemy_structures:
             self.set_enemy_position()
             return True

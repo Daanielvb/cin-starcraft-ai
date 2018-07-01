@@ -61,6 +61,13 @@ class Request(object):
         """
         return self._location
 
+    @location.setter
+    def location(self, location):
+        """
+        :param sc2.position.Point2 location:
+        """
+        self._location = location
+
     @property
     def operation_type_id(self):
         """
