@@ -13,6 +13,7 @@ class OperationTypeId(Enum):
     DEFEND = 'DEFEND'
     BUILD = 'BUILD'
     PATROL = 'PATROL'
+    WARN = 'WARN'
 
 
 class RequestStatus(Enum):
@@ -38,3 +39,4 @@ class RequestPriority(Enum):
 
 class InfoType(Enum):
     ENEMY_POSITION = 'ENEMY_POSITION'
+    ENEMY_NEARBY = 'ENEMY_NEARBY'
