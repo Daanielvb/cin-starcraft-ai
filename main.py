@@ -14,12 +14,13 @@ from strategy.cin_deem_team.terran.human_god import HumanGod
 
 if __name__ == '__main__':
     players = [
-        player.Human(Race.Zerg),
+        # player.Human(Race.Zerg),
+        HumanGod().build_bot_player(),
         HumanGod().build_bot_player()
     ]
 
     run_game(
         map_settings=sc2_maps.get(maps.MAP_SIMPLE64),
         players=players,
-        realtime=False
+        realtime=True
     )
