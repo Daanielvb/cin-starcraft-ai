@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 from sc2.ids.ability_id import AbilityId
 from sc2.ids.unit_typeid import UnitTypeId
 
@@ -34,6 +35,7 @@ class Build(GenericBotNonPlayerUnit):
         """
         build_type = self.info.request.unit_type_id
         scv = self.bot_player.select_build_worker(self.info.request.location, True)
+        # await self.bot_player.do(scv.build(build_type, self.info.request.location))
         await self.bot_player.do(scv.build(build_type, self.info.request.location))
 
     async def depot_behaviour(self):

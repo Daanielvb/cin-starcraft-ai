@@ -19,7 +19,6 @@ class Info(object):
         self._type = type
         self._value = value
 
-
     @property
     def iteration(self):
         """
@@ -48,20 +47,33 @@ class Info(object):
         """
         return self._request.status
 
-    @property
-    def type(self):
-        return self._request.type
-
-    @property
-    def value(self):
-        return self._request.value
-
     @status.setter
     def status(self, status):
         """
         :param core.register_board.request.RequestStatus status:
         """
         self._request.status = status
+
+    @property
+    def type(self):
+        """
+        :return core.register_board.constants.InfoType:
+        """
+        return self._type
+
+    @property
+    def value(self):
+        """
+        :return *:
+        """
+        return self._value
+
+    @value.setter
+    def value(self, value):
+        """
+        :param * value:
+        """
+        self._value = value
 
     @property
     def unit_tag(self):

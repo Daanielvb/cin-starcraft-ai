@@ -126,14 +126,9 @@ class BuildManager(GenericBotNonPlayer):
         :param core.register_board.request.Request request:
         """
         if request.unit_type_id == UnitTypeId.SUPPLYDEPOT:
-            # Get the Point2 (location) of current expansion
-            our_expansion = list(self.bot_player.owned_expansions.keys())[0]
-
-            # Get all the minerals and vespine positions around our expansion
-            resources_list = list(self.bot_player.expansion_locations.get(our_expansion))
+            our_expansion = self.bot_player.get_owned_expansions_locations()[0]
+            resources_list = self.bot_player.get_resources_locations(our_expansion)
             resource_location = resources_list[random.randint(0, len(resources_list)-1)]
-            # request.location = resource_location.position
-            cmdcenter = self.bot_player.units.structure[0]
-
-            request.location = get_mean_location(resource_location.position, cmdcenter.position)
+            command_center = self.bot_player.units.structure[0]
+            request.location = get_mean_location(resource_location.position, command_center.position)
 
