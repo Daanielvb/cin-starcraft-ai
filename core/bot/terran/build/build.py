@@ -3,9 +3,15 @@
 
 from sc2.ids.ability_id import AbilityId
 from sc2.ids.unit_typeid import UnitTypeId
+from sc2.position import Point2
 
 from core.bot.generic_bot_non_player_unit import GenericBotNonPlayerUnit
 from strategy.cin_deem_team.terran.build_dependencies import DEPENDENCIES, BUILD, TECHNOLOGY, SUPPLY
+
+
+def is_addon(unit_type):
+    return unit_type in [UnitTypeId.BARRACKSTECHLAB, UnitTypeId.BARRACKSREACTOR, UnitTypeId.FACTORYTECHLAB,
+                         UnitTypeId.FACTORYREACTOR, UnitTypeId.STARPORTTECHLAB, UnitTypeId.STARPORTREACTOR]
 
 
 class Build(GenericBotNonPlayerUnit):
@@ -22,37 +28,99 @@ class Build(GenericBotNonPlayerUnit):
             bot_player=bot_player, iteration=iteration, request=request, unit_tags=unit_tags
         )
 
+    build_upgraded_tag = None
+
     async def default_behavior(self, iteration):
         """ The default behavior of the bot
         :param int iteration: Game loop iteration
         """
         await self._build()
-        await self.depot_behaviour()
+
+    def get_addon_location(self, addon_type, location):
+        if addon_type in [UnitTypeId.BARRACKSTECHLAB, UnitTypeId.BARRACKSREACTOR]:
+            barracks = self.bot_player.units(UnitTypeId.BARRACKS).prefer_close_to(location)
+            for barrack in barracks:
+                if not barrack.has_add_on:
+                    return barrack
+        elif addon_type in [UnitTypeId.FACTORYTECHLAB, UnitTypeId.FACTORYREACTOR]:
+            factories = self.bot_player.units(UnitTypeId.FACTORY).prefer_close_to(location)
+            for factory in factories:
+                if not factory.has_add_on:
+                    return factory
+        elif addon_type in [UnitTypeId.STARPORTTECHLAB, UnitTypeId.STARPORTREACTOR]:
+            factories = self.bot_player.units(UnitTypeId.STARPORT).prefer_close_to(location)
+            for factory in factories:
+                if not factory.has_add_on:
+                    return factory
+        return None
+
+    async def fix_location(self, location, build_type):
+        if location:
+            # garante que tera espaco para Techs e Reactors
+            if build_type in [UnitTypeId.BARRACKS, UnitTypeId.FACTORY, UnitTypeId.STARPORT]:
+                position_ok = False
+                have_right_space = await self.bot_player.can_place(build_type, Point2((location.x+1, location.y)))
+                for i in range(3):
+                    position_ok = await self.bot_player.can_place(build_type, location)
+                    if position_ok and have_right_space:
+                        position_ok = True
+                        break
+                    else:
+                        location = Point2((location.x-1, location.y))
+                        have_right_space = position_ok
+                        position_ok = False
+                if not position_ok:
+                    location = None
+        return location
+
+    async def get_building_location(self, build_type):
+        location = self.info.request.location.towards_with_random_angle(self.bot_player.game_info.map_center, 10)
+        location = await self.bot_player.find_placement(build_type, location, max_distance=50)
+        location = await self.fix_location(location, build_type)
+        return location
 
     async def _build(self):
         """
         Build action
         """
         if self.info.request.location:
-            build_type = self.info.request.unit_type_id
-            scv = await self.get_builder()
-
-            if self.info.request.unit_type_id == UnitTypeId.REFINERY:
-                location = self.info.request.location
-            else:
-                location = self.info.request.location.towards_with_random_angle(self.bot_player.game_info.map_center, 8)
-
             if await self._check_dependencies(self.info.request):
-                await self.bot_player.do(scv.build(build_type, location))
+                build_type = self.info.request.unit_type_id
+                location = self.info.request.location
+
+                if is_addon(build_type):
+                    building = self.get_addon_location(build_type, location)
+                    if building:
+                        self.info.request.location = building.position
+                        self.build_upgraded_tag = building.tag
+                        await self.bot_player.do(building.build(build_type, building.position))
+                else:
+                    scv = await self.get_builder()
+                    if scv:
+                        if build_type != UnitTypeId.REFINERY:
+                            location = await self.get_building_location(build_type)
+                        else:
+                            print(location)
+                        if location:
+                            await self.bot_player.do(scv.build(build_type, location))
 
         else:
             self.log("Location is None to build: {}".format(self.info.request))
+
+    def get_worker(self, location):
+        # versao que evita pegar o scout
+        workers = self.bot_player.workers.closer_than(20, location) or self.bot_player.workers
+        for worker in workers.prefer_close_to(location).prefer_idle:
+            if not worker.orders or len(worker.orders) == 1\
+                    and worker.orders[0].ability.id in [AbilityId.HARVEST_GATHER, AbilityId.HARVEST_RETURN]:
+                return worker
+        return workers.random
 
     async def get_builder(self):
         scv = None
 
         if not self.info.unit_tags:
-            scv = self.bot_player.select_build_worker(self.info.request.location, True)
+            scv = self.get_worker(self.info.request.location)
             self.info.unit_tag = scv.tag
         else:
             scv = self.bot_player.get_current_scv_unit(self._info.unit_tags[0])

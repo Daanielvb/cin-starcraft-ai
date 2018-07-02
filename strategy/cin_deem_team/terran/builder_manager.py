@@ -6,7 +6,7 @@ from sc2.unit import UnitTypeId
 from s2clientprotocol import common_pb2
 
 from core.bot.generic_bot_non_player import GenericBotNonPlayer
-from core.bot.terran.build.build import Build
+from core.bot.terran.build.build import Build, is_addon
 from core.register_board.constants import OperationTypeId, RequestStatus
 
 from core.bot.util import get_mean_location
@@ -42,23 +42,50 @@ class BuildManager(GenericBotNonPlayer):
             if self._build_unit.request.status == RequestStatus.TO_BE_DONE:
                 self._set_best_location(request)
                 await self._build_unit.default_behavior(iteration)
+            break
+
+        if self._build_unit:
+            await self._build_unit.depot_behaviour()
+
+    def building_completed(self, request):
+        units = self.bot_player.units(request.unit_type_id)
+        if units:
+            unit = units.closest_to(request.location)
+            if unit and unit.distance_to(request.location) < 3:
+                if unit.is_ready:
+                    return True
+        return False
 
     def requests_status_update(self):
         """ Logic to update the requests status """
         if self._build_unit:
-            orders = self.bot_player.get_current_scv_unit(self._build_unit.unit_tags[0]).orders
+            request = self._build_unit.info.request
 
-            for order in orders:
-                target_unit = self.get_target_unit(order)
-                request_status = self._build_unit.info.request.status
+            if is_addon(request.unit_type_id):
+                if self._build_unit.build_upgraded_tag:
+                    units = self.bot_player.get_current_units([self._build_unit.build_upgraded_tag])
+                    if units:
+                        unit = units[0]
+                    else:
+                        unit = None
+                else:
+                    unit = None
+            else:
+                unit = self.bot_player.get_current_scv_unit(self._build_unit.unit_tags[0])
 
-                if target_unit and not target_unit.is_ready and request_status != RequestStatus.ON_GOING:
-                    self.log('Starting request: {}'.format(self._build_unit.info.request))
-                    self._build_unit.info.request.status = RequestStatus.ON_GOING
+            if unit:
+                orders = unit.orders
 
-                elif target_unit and target_unit.is_ready:
-                    self._build_unit.info.request.status = RequestStatus.DONE
-                    self.bot_player.board_request.remove(self._build_unit.info.request)
+                for order in orders:
+                    target_unit = self.get_target_unit(order)
+                    request_status = self._build_unit.info.request.status
+
+                    if target_unit and not target_unit.is_ready and request_status != RequestStatus.ON_GOING:
+                        self.log('Starting request: {}'.format(self._build_unit.info.request))
+                        self._build_unit.info.request.status = RequestStatus.ON_GOING
+                    elif (target_unit and target_unit.is_ready) or (self.building_completed(request)):
+                        self._build_unit.info.request.status = RequestStatus.DONE
+                        self.bot_player.board_request.remove(self._build_unit.info.request)
 
     def get_target_unit(self, order):
         """
@@ -92,7 +119,7 @@ class BuildManager(GenericBotNonPlayer):
         :param core.register_board.request.Request request:
         """
         if request.unit_type_id == UnitTypeId.REFINERY:
-            request.location = self.bot_player.state.vespene_geyser.closest_to(self.bot_player.start_location)
+            request.location = self.bot_player.state.vespene_geyser(UnitTypeId.VESPENEGEYSER).closest_to(self.bot_player.start_location)
         else:
             our_expansion = self.bot_player.get_owned_expansions_locations()[0]
             resources_list = self.bot_player.get_resources_locations(our_expansion)

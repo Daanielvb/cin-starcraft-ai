@@ -44,6 +44,7 @@ class Gather(GenericBotNonPlayer):
         self.should_train_scv = should_train
 
     async def gather_resources(self):
+        if self.bot_player.state.mineral_field:
             await self.bot_player.distribute_workers()
 
     async def train_scv(self):
