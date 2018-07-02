@@ -25,7 +25,7 @@ class HumanGod(GenericBotPlayer):
         self.add_bot(ScoutManager(bot_player=self))
         self.add_bot(BuildManager(bot_player=self))
         self.add_bot(GatherManager(bot_player=self))
-        #self.add_bot(DefenseManager(bot_player=self))
+        # self.add_bot(DefenseManager(bot_player=self))
         self.init_request_board()
 
     def get_units_by_type(self, types):
@@ -86,22 +86,30 @@ class HumanGod(GenericBotPlayer):
                     operation_type_id=OperationTypeId.BUILD)
         )
         self.board_request.register(
-            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.REFINERY,
+            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.ENGINEERINGBAY,
+                    operation_type_id=OperationTypeId.BUILD)
+        )
+        self.board_request.register(
+            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.FACTORY,
+                    operation_type_id=OperationTypeId.BUILD)
+        )
+        self.board_request.register(
+            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.STARPORT,
+                    operation_type_id=OperationTypeId.BUILD)
+        )
+        self.board_request.register(
+            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.SUPPLYDEPOT,
+                    operation_type_id=OperationTypeId.BUILD)
+        )
+        self.board_request.register(
+            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.SUPPLYDEPOT,
+                    operation_type_id=OperationTypeId.BUILD)
+        )
+        self.board_request.register(
+            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.SUPPLYDEPOT,
                     operation_type_id=OperationTypeId.BUILD)
         )
         self.board_request.register(
             Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.BARRACKSTECHLAB,
-                    operation_type_id=OperationTypeId.BUILD)
-        )
-        self.board_request.register(
-            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.SUPPLYDEPOT,
-                    operation_type_id=OperationTypeId.BUILD)
-        )
-        self.board_request.register(
-            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.SUPPLYDEPOT,
-                    operation_type_id=OperationTypeId.BUILD)
-        )
-        self.board_request.register(
-            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.SUPPLYDEPOT,
                     operation_type_id=OperationTypeId.BUILD)
         )

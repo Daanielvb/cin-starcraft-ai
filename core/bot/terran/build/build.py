@@ -54,23 +54,48 @@ class Build(GenericBotNonPlayerUnit):
                     return factory
         return None
 
+    def validate_location(self, location):
+        ref_constructions = self.bot_player.units(UnitTypeId.BARRACKS)\
+                            + self.bot_player.units(UnitTypeId.FACTORY)\
+                            + self.bot_player.units(UnitTypeId.STARPORT)
+        for construction in ref_constructions:
+            if location.x > construction.position.x and construction.position.distance_to(location) < 15:
+                return False
+        return True
+
     async def fix_location(self, location, build_type):
         if location:
-            # garante que tera espaco para Techs e Reactors
-            if build_type in [UnitTypeId.BARRACKS, UnitTypeId.FACTORY, UnitTypeId.STARPORT]:
-                position_ok = False
-                have_right_space = await self.bot_player.can_place(build_type, Point2((location.x+1, location.y)))
-                for i in range(3):
-                    position_ok = await self.bot_player.can_place(build_type, location)
-                    if position_ok and have_right_space:
-                        position_ok = True
-                        break
-                    else:
-                        location = Point2((location.x-1, location.y))
-                        have_right_space = position_ok
-                        position_ok = False
-                if not position_ok:
-                    location = None
+            position_ok = False
+            can_move_left = True
+            # garante que nao vai ocupar o espaco para Techs e Reactors
+            for i in range(2):
+                position_ok = await self.bot_player.can_place(build_type, location)
+                if position_ok and self.validate_location(location):
+                    break
+                else:
+                    can_move_left = False
+                    location = Point2((location.x+1, location.y))
+            if not position_ok:
+                location = None
+            else:
+                # garante que tera espaco para Techs e Reactors
+                if build_type in [UnitTypeId.BARRACKS, UnitTypeId.FACTORY, UnitTypeId.STARPORT]:
+                    position_ok = False
+                    have_right_space = await self.bot_player.can_place(build_type, Point2((location.x+1, location.y)))
+                    for i in range(3):
+                        position_ok = await self.bot_player.can_place(build_type, location)
+                        if position_ok and have_right_space:
+                            position_ok = True
+                            break
+                        elif can_move_left:
+                            location = Point2((location.x-1, location.y))
+                            have_right_space = position_ok
+                            position_ok = False
+                        else:
+                            position_ok = False
+                            break
+                    if not position_ok:
+                        location = None
         return location
 
     async def get_building_location(self, build_type):
@@ -95,7 +120,7 @@ class Build(GenericBotNonPlayerUnit):
                         self.build_upgraded_tag = building.tag
                         await self.bot_player.do(building.build(build_type, building.position))
                 else:
-                    scv = await self.get_builder()
+                    scv = await self.get_builder(location)
                     if scv:
                         if build_type != UnitTypeId.REFINERY:
                             location = await self.get_building_location(build_type)
@@ -116,14 +141,17 @@ class Build(GenericBotNonPlayerUnit):
                 return worker
         return workers.random
 
-    async def get_builder(self):
+    async def get_builder(self, location=None):
         scv = None
 
         if not self.info.unit_tags:
-            scv = self.get_worker(self.info.request.location)
+            scv = self.get_worker(location)
             self.info.unit_tag = scv.tag
         else:
             scv = self.bot_player.get_current_scv_unit(self._info.unit_tags[0])
+
+            if not scv and location:
+                scv = self.get_worker(location)
 
         return scv
 

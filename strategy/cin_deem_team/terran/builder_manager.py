@@ -21,6 +21,7 @@ class BuildManager(GenericBotNonPlayer):
         """
         super(BuildManager, self).__init__(bot_player)
         self._build_unit = None
+        self._started_build_process = False
 
     def find_request(self):
         """ Implements the logic to find the requests that should be handled by the bot
@@ -39,7 +40,7 @@ class BuildManager(GenericBotNonPlayer):
             elif self._build_unit and (not self._build_unit.request or self._build_unit.request.status == RequestStatus.DONE):
                 self._build_unit.set_request(request)
 
-            if self._build_unit.request.status == RequestStatus.TO_BE_DONE:
+            if not self._started_build_process and self._build_unit.request.status == RequestStatus.TO_BE_DONE:
                 self._set_best_location(request)
                 await self._build_unit.default_behavior(iteration)
             break
@@ -58,7 +59,7 @@ class BuildManager(GenericBotNonPlayer):
 
     def requests_status_update(self):
         """ Logic to update the requests status """
-        if self._build_unit:
+        if self._build_unit and self.bot_player.get_current_scv_unit(self._build_unit.unit_tags[0]):
             request = self._build_unit.info.request
 
             if is_addon(request.unit_type_id):
@@ -75,10 +76,12 @@ class BuildManager(GenericBotNonPlayer):
 
             if unit:
                 orders = unit.orders
+                self._started_build_process = True
 
                 for order in orders:
                     target_unit = self.get_target_unit(order)
                     request_status = self._build_unit.info.request.status
+                    self._started_build_process = False
 
                     if target_unit and not target_unit.is_ready and request_status != RequestStatus.ON_GOING:
                         self.log('Starting request: {}'.format(self._build_unit.info.request))
