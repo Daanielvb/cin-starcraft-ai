@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from utils import logger
+
 
 class BoardRequest(object):
     """ Board for task request """
@@ -13,6 +15,7 @@ class BoardRequest(object):
         """
         :param core.request_board.request.Request request:
         """
+        logger.LOGGER('Registering request: {}'.format(request))
         request.request_id = self._requests_count
         self._board.append(request)
         self._requests_count += 1
@@ -28,7 +31,10 @@ class BoardRequest(object):
         """
         :param core.request_board.request.Request request:
         """
-        self._board.remove(request)
+        # TODO: This IF is to avoid remove an already removed request and crash the match
+        logger.LOGGER('Removing request: {}'.format(request))
+        if request in self._board:
+            self._board.remove(request)
 
     def search_request_by_operation_id(self, operation_id):
         """

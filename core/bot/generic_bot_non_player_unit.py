@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from random import randint
 
 from core.bot.generic_bot import GenericBot
 from core.register_board.info import Info
@@ -56,7 +55,7 @@ class GenericBotNonPlayerUnit(GenericBot):
         self._info.request = request
 
     @property
-    def unit_tag(self):
+    def unit_tags(self):
         """
         :return int:
         """

@@ -28,6 +28,23 @@ class HumanGod(GenericBotPlayer):
         #self.add_bot(DefenseManager(bot_player=self))
         self.init_request_board()
 
+    def get_units_by_type(self, types):
+        """
+        :param list[UnitTypeId] types:
+        :return list[sc2.unit.Unit]:
+        """
+        return [unit for unit in self.units if unit.type_id in types]
+
+    def get_units_by_position(self, position_x, position_y):
+        """
+        :param float position_x:
+        :param float position_y:
+        :return sc2.unit.Unit:
+        """
+        for unit in self.units:
+            if [unit.position.x, unit.position.y] == [position_x, position_y]:
+                return unit
+
     async def default_behavior(self, iteration):
         """ The default behavior of the bot
         :param int iteration: Game loop iteration

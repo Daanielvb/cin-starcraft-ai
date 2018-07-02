@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import json
+
 from core.register_board.constants import RequestStatus
 
 
@@ -22,11 +24,11 @@ class Request(object):
         self._status = RequestStatus.TO_BE_DONE
 
     def __str__(self):
-        return str(
+        return json.dumps(
             dict(
                 request_id=self._request_id,
-                operation_type_id=self._operation_type_id.name,
-                unit_type_id=self._unit_type_id.name,
+                operation_type_id=self._operation_type_id.name if self._operation_type_id else '',
+                unit_type_id=self._unit_type_id.name if self._unit_type_id else '',
                 request_priority_level=self._request_priority_level.name,
                 status=self._status.name
             )
