@@ -6,6 +6,8 @@ from sc2.ids.unit_typeid import UnitTypeId
 from sc2.position import Point2
 
 from core.bot.generic_bot_non_player_unit import GenericBotNonPlayerUnit
+from core.register_board.constants import RequestPriority, OperationTypeId
+from core.register_board.request import Request
 from strategy.cin_deem_team.terran.build_dependencies import DEPENDENCIES, BUILD, TECHNOLOGY, SUPPLY
 
 
@@ -165,7 +167,7 @@ class Build(GenericBotNonPlayerUnit):
     async def _check_dependencies(self, request):
         """
         Check request dependencies.
-        :param core.register_board.request.Request: request
+        :param core.register_board.request.Request request:
         :return bool:
         """
         requested_unit = request.unit_type_id
@@ -177,19 +179,20 @@ class Build(GenericBotNonPlayerUnit):
             can_build = can_build.can_afford_minerals and can_build.can_afford_vespene
 
             build_dependencies = request_dependencies[BUILD]
-            can_build = can_build and await self.check_build_dependencies(build_dependencies, can_build)
+            can_build = can_build and await self.check_build_dependencies(request, build_dependencies, can_build)
 
             tech_dependencies = request_dependencies[TECHNOLOGY]
-            can_build = can_build and await self.check_technology_dependencies(tech_dependencies, can_build)
+            can_build = can_build and await self.check_technology_dependencies(request, tech_dependencies, can_build)
 
             supply_dependencies = request_dependencies[SUPPLY]
-            can_build = can_build and await self.check_supply_dependencies(supply_dependencies, can_build)
+            can_build = can_build and await self.check_supply_dependencies(request, supply_dependencies, can_build)
 
         return can_build
 
-    async def check_supply_dependencies(self, supply_dependencies, can_build):
+    async def check_supply_dependencies(self, request, supply_dependencies, can_build):
         """
         Check supply dependencies
+        :param core.register_board.request.Request request:
         :param supply_dependencies:
         :param can_build:
         :return:
@@ -197,13 +200,17 @@ class Build(GenericBotNonPlayerUnit):
         if self.bot_player.supply_left > supply_dependencies:
             pass
         else:
-            # register needed of supply
+            self.bot_player.board_request.register(
+                Request(request_priority=request.request_priority_level, unit_type_id=UnitTypeId.SUPPLYDEPOT,
+                        operation_type_id=OperationTypeId.BUILD)
+            )
             can_build = False
         return can_build
 
-    async def check_technology_dependencies(self, tech_dependencies, can_build):
+    async def check_technology_dependencies(self, request, tech_dependencies, can_build):
         """
         Check technology dependencies
+        :param core.register_board.request.Request request:
         :param tech_dependencies:
         :param can_build:
         :return:
@@ -212,14 +219,18 @@ class Build(GenericBotNonPlayerUnit):
             if self.bot_player.get_available_abilities(dependency).amount > 0:
                 can_build = can_build and True
             else:
-                # register needed technology
+                self.bot_player.board_request.register(
+                    Request(request_priority=request.request_priority_level, unit_type_id=dependency,
+                            operation_type_id=OperationTypeId.RESEARCH_TECHNOLOGY)
+                )
                 can_build = False
                 break
         return can_build
 
-    async def check_build_dependencies(self, build_dependencies, can_build):
+    async def check_build_dependencies(self, request, build_dependencies, can_build):
         """
         Check build dependencies
+        :param core.register_board.request.Request request:
         :param build_dependencies:
         :param can_build:
         :return:
@@ -228,7 +239,10 @@ class Build(GenericBotNonPlayerUnit):
             if self.bot_player.units(dependency).amount > 0:
                 can_build = can_build and True
             else:
-                # register needed unit
+                self.bot_player.board_request.register(
+                    Request(request_priority=request.request_priority_level, unit_type_id=dependency,
+                            operation_type_id=OperationTypeId.BUILD)
+                )
                 can_build = False
                 break
         return can_build

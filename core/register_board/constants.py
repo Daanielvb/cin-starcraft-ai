@@ -9,13 +9,14 @@ class OperationTypeId(Enum):
     Operation Type Id
     """
     ATTACK = 'ATTACK'
-    SCOUT = 'SCOUT'
-    DEFEND = 'DEFEND'
     BUILD = 'BUILD'
+    DEFEND = 'DEFEND'
     PATROL = 'PATROL'
-    WARN = 'WARN'
+    RESEARCH_TECHNOLOGY = 'RESEARCH_TECHNOLOGY'
+    SCOUT = 'SCOUT'
     TRAIN_SCV_ALLOW = 'ALLOW SCV'
     TRAIN_SCV_DENY = 'DENY SCV'
+    WARN = 'WARN'
 
 
 class RequestStatus(Enum):

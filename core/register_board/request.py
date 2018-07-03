@@ -59,6 +59,13 @@ class Request(object):
         return self._unit_type_id
 
     @property
+    def request_priority_level(self):
+        """
+        :return core.register_board.constants.RequestPriority:
+        """
+        return self._request_priority_level
+
+    @property
     def location(self):
         """
         :return sc2.position.Point2:
