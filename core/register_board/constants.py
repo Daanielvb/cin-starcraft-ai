@@ -9,6 +9,7 @@ class OperationTypeId(Enum):
     Operation Type Id
     """
     ATTACK = 'ATTACK'
+    ARMY = 'ARMY'
     BUILD = 'BUILD'
     DEFEND = 'DEFEND'
     PATROL = 'PATROL'

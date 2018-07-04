@@ -94,12 +94,17 @@ class GenericBotNonPlayer(GenericBot):
         :return list[sc2.unit.Unit]:
         """
         units = []
-
-        for info in self.bot_player.board_info.board:
-            units = self.bot_player.get_current_units(info.unit_tags)
-
-            if units:
-                for unit in units:
-                    if unit.type_id == UnitTypeId.MARINE or unit.type.id == UnitTypeId.MARAUDER:
-                        units.append(unit)
+        for unit in self.bot_player.units:
+            if unit.type_id == UnitTypeId.MARINE or unit.type_id == UnitTypeId.MARAUDER:
+                units.append(unit)
         return units
+
+    def find_ready_barracks(self):
+        """
+        :return list[sc2.unit.Unit]:
+        """
+        barracks = self.bot_player.units(UnitTypeId.BARRACKS).ready
+        if len(barracks) >= 1:
+            return barracks[0]
+        else:
+            return None
