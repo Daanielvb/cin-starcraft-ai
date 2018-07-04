@@ -12,9 +12,12 @@ from core.register_board.info import Info
 def get_workers_free_slots(unit):
     return unit.ideal_harvesters - unit.assigned_harvesters
 
+def scv_can_gather(scv):
+    orders = scv.orders
+    return len(orders) < 1 or orders[0].ability.id in [AbilityId.HARVEST_GATHER, AbilityId.HARVEST_RETURN]
 
 class Gather(GenericBotNonPlayer):
-    """  A Scout bot class """
+    """  A Gather bot class """
 
     should_train_scv = False
 

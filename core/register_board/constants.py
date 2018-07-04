@@ -24,6 +24,7 @@ class RequestStatus(Enum):
     Request Status
     """
     TO_BE_DONE = "TO BE DONE"
+    START_DOING = "START DOING"
     ON_GOING = "ON GOING"
     DONE = "DONE"
     DISMISSED = "DISMISSED"

@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from sc2.unit import Unit
 from sc2.ids.ability_id import AbilityId
 from sc2.ids.unit_typeid import UnitTypeId
 from sc2.position import Point2
 
+from core.register_board.constants import RequestStatus
 from core.bot.generic_bot_non_player_unit import GenericBotNonPlayerUnit
 from core.register_board.constants import RequestPriority, OperationTypeId
 from core.register_board.request import Request
@@ -100,11 +102,17 @@ class Build(GenericBotNonPlayerUnit):
                         location = None
         return location
 
-    async def get_building_location(self, build_type):
-        location = self.info.request.location.towards_with_random_angle(self.bot_player.game_info.map_center, 10)
-        location = await self.bot_player.find_placement(build_type, location, max_distance=50)
+    async def get_building_location(self, build_type, location):
+        location = location.towards_with_random_angle(self.bot_player.game_info.map_center, 5)
+        location = await self.bot_player.find_placement(build_type, location, max_distance=5)
         location = await self.fix_location(location, build_type)
         return location
+
+    async def get_vespene_location(self):
+        command_centers = self.bot_player.units(UnitTypeId.COMMANDCENTER)
+        for cmd_center in command_centers:
+            return self.bot_player.state.vespene_geyser.closest_to(cmd_center)
+        return None
 
     async def _build(self):
         """
@@ -121,15 +129,24 @@ class Build(GenericBotNonPlayerUnit):
                         self.info.request.location = building.position
                         self.build_upgraded_tag = building.tag
                         await self.bot_player.do(building.build(build_type, building.position))
+                        self.info.request.status = RequestStatus.START_DOING
                 else:
                     scv = await self.get_builder(location)
                     if scv:
-                        if build_type != UnitTypeId.REFINERY:
-                            location = await self.get_building_location(build_type)
-                        else:
-                            print(location)
+                        if build_type == UnitTypeId.COMMANDCENTER:
+                            location = await self.bot_player.get_next_expansion()
+                            location = await self.bot_player.find_placement(build_type, location, max_distance=10,
+                                                                            random_alternative=False, placement_step=1)
+                        elif build_type != UnitTypeId.REFINERY:
+                            location = await self.get_building_location(build_type, location)
+                        elif not location or not isinstance(location, Unit) or location.type_id != UnitTypeId.VESPENEGEYSER:
+                            location = await self.get_vespene_location()
+
                         if location:
-                            await self.bot_player.do(scv.build(build_type, location))
+                            self.info.request.location = location
+                            await self.bot_player.do(scv.move(location))
+                            await self.bot_player.do(scv.build(build_type, location, queue=True))
+                            self.info.request.status = RequestStatus.START_DOING
 
         else:
             self.log("Location is None to build: {}".format(self.info.request))
@@ -172,12 +189,11 @@ class Build(GenericBotNonPlayerUnit):
         """
         requested_unit = request.unit_type_id
         request_dependencies = DEPENDENCIES.get(requested_unit)
-        can_build = True
+
+        can_build = self.bot_player.can_afford(requested_unit)
+        can_build = can_build.can_afford_minerals and can_build.can_afford_vespene
 
         if request_dependencies:
-            can_build = self.bot_player.can_afford(requested_unit)
-            can_build = can_build.can_afford_minerals and can_build.can_afford_vespene
-
             build_dependencies = request_dependencies[BUILD]
             can_build = can_build and await self.check_build_dependencies(request, build_dependencies, can_build)
 

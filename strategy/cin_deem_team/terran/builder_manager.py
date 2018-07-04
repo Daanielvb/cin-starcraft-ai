@@ -3,6 +3,7 @@
 
 from numpy import random
 from sc2.unit import UnitTypeId
+from sc2.ids.ability_id import AbilityId
 from s2clientprotocol import common_pb2
 
 from core.bot.generic_bot_non_player import GenericBotNonPlayer
@@ -14,6 +15,8 @@ from core.bot.util import get_mean_location
 
 class BuildManager(GenericBotNonPlayer):
     """ Build manager class """
+
+    current_iteration = 0
 
     def __init__(self, bot_player):
         """
@@ -33,6 +36,7 @@ class BuildManager(GenericBotNonPlayer):
         """ Logic to go through the bot requests
         :param int iteration: Game loop iteration
         """
+        self.current_iteration = iteration
         for request in self.requests:
             if not self._build_unit:
                 self.set_build_unit(iteration=iteration, request=request)
@@ -40,7 +44,8 @@ class BuildManager(GenericBotNonPlayer):
             elif self._build_unit and (not self._build_unit.request or self._build_unit.request.status == RequestStatus.DONE):
                 self._build_unit.set_request(request)
 
-            if not self._started_build_process and self._build_unit.request.status == RequestStatus.TO_BE_DONE:
+            if not self._started_build_process and self._build_unit.request.status in [RequestStatus.TO_BE_DONE,
+                                                                                       RequestStatus.FAILED]:
                 self._set_best_location(request)
                 await self._build_unit.default_behavior(iteration)
             break
@@ -52,13 +57,14 @@ class BuildManager(GenericBotNonPlayer):
         units = self.bot_player.units(request.unit_type_id)
         if units:
             unit = units.closest_to(request.location)
-            if unit and unit.distance_to(request.location) < 3:
-                if unit.is_ready:
+            if unit:
+                if unit.is_ready and unit.distance_to(request.location) < 6:
                     return True
         return False
 
     def requests_status_update(self):
         """ Logic to update the requests status """
+
         if self._build_unit and self.bot_player.get_current_scv_unit(self._build_unit.unit_tags[0]):
             request = self._build_unit.info.request
 
@@ -74,22 +80,27 @@ class BuildManager(GenericBotNonPlayer):
             else:
                 unit = self.bot_player.get_current_scv_unit(self._build_unit.unit_tags[0])
 
+
             if unit:
                 orders = unit.orders
                 self._started_build_process = True
 
                 for order in orders:
                     target_unit = self.get_target_unit(order)
-                    request_status = self._build_unit.info.request.status
+                    request_status = request.status
                     self._started_build_process = False
 
-                    if target_unit and not target_unit.is_ready and request_status != RequestStatus.ON_GOING:
-                        self.log('Starting request: {}'.format(self._build_unit.info.request))
-                        self._build_unit.info.request.status = RequestStatus.ON_GOING
-                    elif (target_unit and target_unit.is_ready) or (self.building_completed(request)):
-                        self._build_unit.info.request.status = RequestStatus.DONE
-                        self.bot_player.board_request.remove(self._build_unit.info.request)
-
+                    if target_unit and target_unit.type_id == request.unit_type_id and not target_unit.is_ready:
+                        if request_status != RequestStatus.ON_GOING:
+                            self.log('Starting request: {}'.format(self._build_unit.info.request))
+                            request.status = RequestStatus.ON_GOING
+                    elif (target_unit and target_unit.type_id == request.unit_type_id and target_unit.is_ready) or self.building_completed(request):
+                        request.status = RequestStatus.DONE
+                        self.bot_player.board_request.remove(request)
+                    #elif order.ability.id in [AbilityId.HARVEST_GATHER, AbilityId.HARVEST_RETURN] and request.status == RequestStatus.START_DOING:
+                    #    request.status = RequestStatus.FAILED
+                print(orders)
+            print(str(request.unit_type_id) + " = " + str(request.status))
     def get_target_unit(self, order):
         """
         :param order:
