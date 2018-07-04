@@ -20,23 +20,27 @@ class DefenseManager(GenericBotNonPlayer):
         self._defense_units = None
         self._relevant_info = None
 
-
     def find_request(self):
         """ Implements the logic to find the requests that should be handled by the bot
         :return list[core.register_board.request.Request]
         """
         self._relevant_info = self.find_info()
-        return self.bot_player.board_request.search_request_by_operation_id(OperationTypeId.DEFEND)
+        army_requests = self.bot_player.board_request.search_request_by_operation_id(OperationTypeId.ARMY)
+        army_requests.extend(self.bot_player.board_request.search_request_by_operation_id(OperationTypeId.DEFEND))
+        return army_requests
 
     def find_info(self):
         return self.bot_player.board_info.search_request_by_type(InfoType.ENEMY_NEARBY)
-
 
     async def requests_handler(self, iteration):
         """ Logic to go through the bot requests
         :param int iteration: Game loop iteration
         """
         for request in self.requests:
+            if request.status == RequestStatus.TO_BE_DONE and request.operation_type_id == OperationTypeId.ARMY:
+                if self.find_ready_barracks():
+                    await self.build(request, self.find_ready_barracks())
+
             if not self._defense_units:
                 available_defensive_units = self.find_available_defense_units()
 
@@ -49,16 +53,22 @@ class DefenseManager(GenericBotNonPlayer):
                     )
 
                     await self.perform_defense(iteration, self._defense_units)
-            else:
-                if request.status == RequestStatus.TO_BE_DONE and request.operation_type_id == OperationTypeId.DEFEND:
-                    print('defend!')
-                    # check if there are marines to bunker
-                    # move defense units to ramp
+
         for info in self._relevant_info:
                 if len(self.find_available_defense_units()) > info.value:
                     Request(request_priority=RequestPriority.PRIORITY_HIGH, unit_type_id=UnitTypeId.MARINE,
                             operation_type_id=OperationTypeId.DEFEND, location=info.location, value=info.value)
 
+    async def build(self, request, barrack):
+        if self.bot_player.can_afford(request.unit_type_id) and barrack.noqueue and request.amount > 1:
+            await self.bot_player.do(barrack.train(UnitTypeId.MARINE))
+            self.update_build_request(request)
+
+    def update_build_request(self, request):
+        amount = request.amount - 1
+        request.amount = amount
+        if request.amount == 0:
+            self.bot_player.board_request.remove(request)
 
     def requests_status_update(self):
         """ Logic to update the requests status """

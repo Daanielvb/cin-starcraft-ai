@@ -9,7 +9,7 @@ from core.register_board.constants import RequestStatus
 class Request(object):
     """ An action request """
 
-    def __init__(self, request_priority, location=None, unit_type_id=None, operation_type_id=None):
+    def __init__(self, request_priority, location=None, unit_type_id=None, operation_type_id=None, amount=0):
         """
         :param core.register_board.constants.RequestPriority request_priority:
         :param sc2.position.Point2 location:
@@ -22,6 +22,7 @@ class Request(object):
         self._unit_type_id = unit_type_id
         self._operation_type_id = operation_type_id
         self._status = RequestStatus.TO_BE_DONE
+        self._amount = amount
 
     def __str__(self):
         return json.dumps(
@@ -30,6 +31,7 @@ class Request(object):
                 operation_type_id=self._operation_type_id.name if self._operation_type_id else '',
                 unit_type_id=self._unit_type_id.name if self._unit_type_id else '',
                 request_priority_level=self._request_priority_level.name,
+                amount=self._amount,
                 status=self._status.name
             )
         )
@@ -72,6 +74,13 @@ class Request(object):
         """
         return self._location
 
+    @property
+    def amount(self):
+        """
+        :return int
+        """
+        return self._amount
+
     @location.setter
     def location(self, location):
         """
@@ -99,3 +108,10 @@ class Request(object):
         :param core.register_board.constants.RequestStatus status:
         """
         self._status = status
+
+    @amount.setter
+    def amount(self, amount):
+        """
+        :param int amount:
+        """
+        self._amount = amount

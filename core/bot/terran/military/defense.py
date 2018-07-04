@@ -46,11 +46,11 @@ class DefenseBot(GenericBotNonPlayerUnit):
     async def defend(self):
         self.log("Defending")
         target = self.select_enemy_target()
-        if target.exists:
+        if target:
             await self.attack_target(target)
 
     def select_enemy_target(self):
         self.log("Setting target")
-        target = self.known_enemy_units
-        if target.exists:
+        target = self.bot_player.known_enemy_units
+        if len(target) > 0:
             return target.random.position

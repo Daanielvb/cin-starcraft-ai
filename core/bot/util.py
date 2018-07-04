@@ -56,7 +56,3 @@ def add_to_location(pos, value):
     x = pos.x + value
     y = pos.y + value
     return Point2((x,y))
-
-
-
-
