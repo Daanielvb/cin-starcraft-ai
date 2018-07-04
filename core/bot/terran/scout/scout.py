@@ -45,7 +45,7 @@ class Scout(GenericBotNonPlayerUnit):
 
     async def move_scout_to(self, position):
         self.log("Moving Scout")
-        unit = self.bot_player.get_current_scv_unit(self._info.unit_tags)
+        unit = self.bot_player.get_current_scv_unit(self._info.unit_tags[0])
         if unit:
             await self.bot_player.do(unit.move(position))
         else:
