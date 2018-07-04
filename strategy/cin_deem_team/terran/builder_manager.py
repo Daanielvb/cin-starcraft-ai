@@ -97,8 +97,8 @@ class BuildManager(GenericBotNonPlayer):
                     elif (target_unit and target_unit.type_id == request.unit_type_id and target_unit.is_ready) or self.building_completed(request):
                         request.status = RequestStatus.DONE
                         self.bot_player.board_request.remove(request)
-                    #elif order.ability.id in [AbilityId.HARVEST_GATHER, AbilityId.HARVEST_RETURN] and request.status == RequestStatus.START_DOING:
-                    #    request.status = RequestStatus.FAILED
+                    elif order.ability.id in [AbilityId.HARVEST_GATHER, AbilityId.HARVEST_RETURN] and request.status == RequestStatus.START_DOING:
+                        request.status = RequestStatus.FAILED
                 print(orders)
             print(str(request.unit_type_id) + " = " + str(request.status))
     def get_target_unit(self, order):
