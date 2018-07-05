@@ -84,7 +84,12 @@ class DefenseManager(GenericBotNonPlayer):
                                 amount=15,
                                 operation_type_id=OperationTypeId.ARMY)
                     )
-                    await self.attack(iteration, self._defense_units)
+                    await self.attack(request, iteration, self._defense_units)
+
+            if request.status == RequestStatus.DONE and request.operation_type_id == OperationTypeId.ATTACK:
+                #should go back to base if attack was finished...but is not working ;)
+                if len(self.bot_player.known_enemy_units) == 0:
+                    await self.move_base(self._defense_units)
 
             if not self._defense_units:
                 available_defensive_units = self.find_available_defense_units()
@@ -138,9 +143,19 @@ class DefenseManager(GenericBotNonPlayer):
         await defense.default_behavior(iteration)
 
     @staticmethod
-    async def attack(iteration, defense):
+    async def attack(request, iteration, defense):
         """
         :param int iteration: Game loop iteration
         :param core.bot.terran.d
         """
-        await defense.perform_attack()
+        request.status == RequestStatus.ON_GOING
+        await defense.perform_attack(request)
+
+    @staticmethod
+    async def visit_base(defense):
+        """
+        :param int iteration: Game loop iteration
+        :param core.bot.terran.d
+        """
+        await defense.visit_base()
+
