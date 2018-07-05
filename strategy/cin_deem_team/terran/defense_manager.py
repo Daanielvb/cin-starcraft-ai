@@ -54,7 +54,12 @@ class DefenseManager(GenericBotNonPlayer):
                         request=request,
                         unit_tags=util.get_units_tags(self.find_available_defense_units())
                     )
-                    await self.attack(iteration, self._defense_units)
+                    self.bot_player.board_request.register(
+                        Request(request_priority=RequestPriority.PRIORITY_MEDIUM, unit_type_id=UnitTypeId.MARINE,
+                                amount=15,
+                                operation_type_id=OperationTypeId.ARMY)
+                    )
+                    await self.attack(request, iteration, self._defense_units)
 
             if not self._defense_units:
                 available_defensive_units = self.find_available_defense_units()
@@ -76,12 +81,12 @@ class DefenseManager(GenericBotNonPlayer):
                             #operation_type_id=OperationTypeId.DEFEND, location=info.location, value=info.value)
 
     async def build(self, request, barrack):
-        if self.bot_player.can_afford(request.unit_type_id) and barrack.noqueue and request.amount > 1:
+        if self.bot_player.can_afford(request.unit_type_id) and barrack.noqueue and request.amount >= 1:
             if self.bot_player.supply_left < 2:
                 Request(request_priority=request.request_priority_level, unit_type_id=UnitTypeId.SUPPLYDEPOT,
                         operation_type_id=OperationTypeId.BUILD)
             else:
-                await self.bot_player.do(barrack.train(UnitTypeId.MARINE))
+                await self.bot_player.do(barrack.train(request.unit_type_id))
                 self.update_build_request(request)
 
     def update_build_request(self, request):
