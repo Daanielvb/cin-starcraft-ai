@@ -20,6 +20,9 @@ class DefenseManager(GenericBotNonPlayer):
         self._defense_units = None
         self._relevant_info = None
 
+    async def update_barracks_rally(self):
+
+
     def find_request(self):
         """ Implements the logic to find the requests that should be handled by the bot
         :return list[core.register_board.request.Request]
@@ -41,10 +44,10 @@ class DefenseManager(GenericBotNonPlayer):
             if request.status == RequestStatus.TO_BE_DONE and request.operation_type_id == OperationTypeId.ARMY:
                 if request.unit_type_id == UnitTypeId.MARINE:
                     if self.find_ready_barracks():
-                        await self.build(request, self.find_ready_barracks())
+                        await self.request_build(request, self.find_ready_barracks())
                 elif request.unit_type_id == UnitTypeId.MARAUDER:
                     if self.find_ready_barracks_tech():
-                        await self.build(request, self.find_ready_barracks_tech())
+                        await self.request_build(request, self.find_ready_barracks_tech())
 
             if request.status == RequestStatus.TO_BE_DONE and request.operation_type_id == OperationTypeId.ATTACK:
                 if len(self.find_available_defense_units()) >= request.amount:
@@ -59,7 +62,7 @@ class DefenseManager(GenericBotNonPlayer):
                                 amount=15,
                                 operation_type_id=OperationTypeId.ARMY)
                     )
-                    await self.attack(request, iteration, self._defense_units)
+                    await self.attack(iteration, self._defense_units)
 
             if not self._defense_units:
                 available_defensive_units = self.find_available_defense_units()
@@ -80,10 +83,10 @@ class DefenseManager(GenericBotNonPlayer):
                     #Request(request_priority=RequestPriority.PRIORITY_HIGH, unit_type_id=UnitTypeId.MARINE,
                             #operation_type_id=OperationTypeId.DEFEND, location=info.location, value=info.value)
 
-    async def build(self, request, barrack):
+    async def request_build(self, request, barrack):
         if self.bot_player.can_afford(request.unit_type_id) and barrack.noqueue and request.amount >= 1:
-            if self.bot_player.supply_left < 2:
-                Request(request_priority=request.request_priority_level, unit_type_id=UnitTypeId.SUPPLYDEPOT,
+            if self.bot_player.supply_left < 2 and self.bot_player.supply_cap < 200:
+                Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.SUPPLYDEPOT,
                         operation_type_id=OperationTypeId.BUILD)
             else:
                 await self.bot_player.do(barrack.train(request.unit_type_id))
