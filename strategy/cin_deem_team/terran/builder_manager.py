@@ -6,9 +6,10 @@ from sc2.unit import UnitTypeId
 from sc2.ids.ability_id import AbilityId
 from s2clientprotocol import common_pb2
 
+from core.register_board.request import Request
 from core.bot.generic_bot_non_player import GenericBotNonPlayer
 from core.bot.terran.build.build import Build, is_addon
-from core.register_board.constants import OperationTypeId, RequestStatus
+from core.register_board.constants import OperationTypeId, RequestStatus, RequestPriority
 
 from core.bot.util import get_mean_location
 
@@ -46,6 +47,15 @@ class BuildManager(GenericBotNonPlayer):
 
             if not self._started_build_process and self._build_unit.request.status in [RequestStatus.TO_BE_DONE,
                                                                                        RequestStatus.FAILED]:
+
+                # evita treinar marines se precisar melhorar as barracas
+                if is_addon(request.unit_type_id):
+                    print("\nPLEASE, STOP!!\n")
+                    self.bot_player.board_request.register(
+                        Request(request_priority=RequestPriority.PRIORITY_HIGHER,
+                                operation_type_id=OperationTypeId.TRAIN_MARINE_DENY)
+                    )
+
                 self._set_best_location(request)
                 await self._build_unit.default_behavior(iteration)
             break
@@ -68,7 +78,9 @@ class BuildManager(GenericBotNonPlayer):
         if self._build_unit and self.bot_player.get_current_scv_unit(self._build_unit.unit_tags[0]):
             request = self._build_unit.info.request
 
-            if is_addon(request.unit_type_id):
+            request_is_addon = is_addon(request.unit_type_id)
+
+            if request_is_addon:
                 if self._build_unit.build_upgraded_tag:
                     units = self.bot_player.get_current_units([self._build_unit.build_upgraded_tag])
                     if units:
@@ -80,7 +92,6 @@ class BuildManager(GenericBotNonPlayer):
             else:
                 unit = self.bot_player.get_current_scv_unit(self._build_unit.unit_tags[0])
 
-
             if unit:
                 orders = unit.orders
                 self._started_build_process = True
@@ -90,7 +101,21 @@ class BuildManager(GenericBotNonPlayer):
                     request_status = request.status
                     self._started_build_process = False
 
-                    if target_unit and target_unit.type_id == request.unit_type_id and not target_unit.is_ready:
+                    if request_is_addon and order.ability.id in [AbilityId.BUILD_REACTOR,
+                                                                 AbilityId.BUILD_REACTOR_BARRACKS,
+                                                                 AbilityId.BUILD_REACTOR_FACTORY,
+                                                                 AbilityId.BUILD_REACTOR_STARPORT,
+                                                                 AbilityId.BUILD_TECHLAB,
+                                                                 AbilityId.BUILD_TECHLAB_BARRACKS,
+                                                                 AbilityId.BUILD_TECHLAB_FACTORY,
+                                                                 AbilityId.BUILD_TECHLAB_STARPORT
+                                                                 ]:
+                        print("\nCAN TRAIN!!\n")
+                        self.bot_player.board_request.register(
+                            Request(request_priority=RequestPriority.PRIORITY_HIGHER,
+                                    operation_type_id=OperationTypeId.TRAIN_MARINE_ALLOW)
+                        )
+                    elif target_unit and target_unit.type_id == request.unit_type_id and not target_unit.is_ready:
                         if request_status != RequestStatus.ON_GOING:
                             self.log('Starting request: {}'.format(self._build_unit.info.request))
                             request.status = RequestStatus.ON_GOING
@@ -99,8 +124,7 @@ class BuildManager(GenericBotNonPlayer):
                         self.bot_player.board_request.remove(request)
                     elif order.ability.id in [AbilityId.HARVEST_GATHER, AbilityId.HARVEST_RETURN] and request.status == RequestStatus.START_DOING:
                         request.status = RequestStatus.FAILED
-                print(orders)
-            print(str(request.unit_type_id) + " = " + str(request.status))
+
     def get_target_unit(self, order):
         """
         :param order:

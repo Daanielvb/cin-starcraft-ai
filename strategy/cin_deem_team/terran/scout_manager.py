@@ -21,9 +21,8 @@ class ScoutManager(GenericBotNonPlayer):
         """ Implements the logic to find the requests that should be handled by the bot
         :return list[core.register_board.request.Request]
         """
-        scout_request_list = self.bot_player.board_request.search_request_by_operation_id(OperationTypeId.SCOUT)
-        scout_request_list.extend(self.bot_player.board_request.search_request_by_operation_id(OperationTypeId.PATROL))
-        return scout_request_list
+        return self.bot_player.board_request.search_request_by_operation_ids([OperationTypeId.SCOUT,
+                                                                              OperationTypeId.PATROL])
 
     async def requests_handler(self, iteration):
         """ Logic to go through the bot requests

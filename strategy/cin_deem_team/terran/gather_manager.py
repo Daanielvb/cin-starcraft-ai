@@ -23,10 +23,8 @@ class GatherManager(GenericBotNonPlayer):
         """ Implements the logic to find the requests that should be handled by the bot
         :return list[core.register_board.request.Request]
         """
-
-        allow_train = self.bot_player.board_request.search_request_by_operation_id(OperationTypeId.TRAIN_SCV_ALLOW)
-        deny_train = self.bot_player.board_request.search_request_by_operation_id(OperationTypeId.TRAIN_SCV_DENY)
-        return allow_train + deny_train
+        return self.bot_player.board_request.search_request_by_operation_ids([OperationTypeId.TRAIN_SCV_ALLOW,
+                                                                              OperationTypeId.TRAIN_SCV_DENY])
 
     def requests_status_update(self):
         """ Logic to update the requests status """

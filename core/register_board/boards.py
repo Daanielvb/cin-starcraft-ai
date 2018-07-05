@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from utils import logger
+from core.register_board.constants import RequestPriority
 
 
 class BoardRequest(object):
@@ -36,12 +37,59 @@ class BoardRequest(object):
         if request in self._board:
             self._board.remove(request)
 
+    def search_request_by_operation_ids(self, operation_ids):
+        """
+        :param core.register_board.constants.OperationTypeId operation_id:
+        :return list[core.register_board.request.Request]:
+        """
+
+        list_higher = []
+        list_high = []
+        list_medium = []
+        list_low = []
+        list_lower = []
+
+        for request in self.board:
+            if request.operation_type_id in operation_ids:
+                if request.request_priority_level == RequestPriority.PRIORITY_HIGHER:
+                    list_higher.append(request)
+                elif request.request_priority_level == RequestPriority.PRIORITY_HIGH:
+                    list_high.append(request)
+                elif request.request_priority_level == RequestPriority.PRIORITY_MEDIUM:
+                    list_medium.append(request)
+                elif request.request_priority_level == RequestPriority.PRIORITY_LOW:
+                    list_low.append(request)
+                elif request.request_priority_level == RequestPriority.PRIORITY_LOWER:
+                    list_lower.append(request)
+
+        return list_higher + list_high + list_medium + list_low + list_lower
+
     def search_request_by_operation_id(self, operation_id):
         """
         :param core.register_board.constants.OperationTypeId operation_id:
         :return list[core.register_board.request.Request]:
         """
-        return [request for request in self.board if request.operation_type_id == operation_id]
+
+        list_higher = []
+        list_high = []
+        list_medium = []
+        list_low = []
+        list_lower = []
+
+        for request in self.board:
+            if request.operation_type_id == operation_id:
+                if request.request_priority_level == RequestPriority.PRIORITY_HIGHER:
+                    list_higher.append(request)
+                elif request.request_priority_level == RequestPriority.PRIORITY_HIGH:
+                    list_high.append(request)
+                elif request.request_priority_level == RequestPriority.PRIORITY_MEDIUM:
+                    list_medium.append(request)
+                elif request.request_priority_level == RequestPriority.PRIORITY_LOW:
+                    list_low.append(request)
+                elif request.request_priority_level == RequestPriority.PRIORITY_LOWER:
+                    list_lower.append(request)
+
+        return list_higher + list_high + list_medium + list_low + list_lower
 
 
 class BoardInfo(object):

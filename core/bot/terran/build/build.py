@@ -44,18 +44,18 @@ class Build(GenericBotNonPlayerUnit):
         if addon_type in [UnitTypeId.BARRACKSTECHLAB, UnitTypeId.BARRACKSREACTOR]:
             barracks = self.bot_player.units(UnitTypeId.BARRACKS).prefer_close_to(location)
             for barrack in barracks:
-                if not barrack.has_add_on:
+                if not barrack.has_add_on and barrack.noqueue:
                     return barrack
         elif addon_type in [UnitTypeId.FACTORYTECHLAB, UnitTypeId.FACTORYREACTOR]:
             factories = self.bot_player.units(UnitTypeId.FACTORY).prefer_close_to(location)
             for factory in factories:
-                if not factory.has_add_on:
+                if not factory.has_add_on and factory.noqueue:
                     return factory
         elif addon_type in [UnitTypeId.STARPORTTECHLAB, UnitTypeId.STARPORTREACTOR]:
-            factories = self.bot_player.units(UnitTypeId.STARPORT).prefer_close_to(location)
-            for factory in factories:
-                if not factory.has_add_on:
-                    return factory
+            starports = self.bot_player.units(UnitTypeId.STARPORT).prefer_close_to(location)
+            for starport in starports:
+                if not starport.has_add_on and starport.noqueue:
+                    return starport
         return None
 
     def validate_location(self, location):
@@ -85,14 +85,14 @@ class Build(GenericBotNonPlayerUnit):
                 # garante que tera espaco para Techs e Reactors
                 if build_type in [UnitTypeId.BARRACKS, UnitTypeId.FACTORY, UnitTypeId.STARPORT]:
                     position_ok = False
-                    have_right_space = await self.bot_player.can_place(build_type, Point2((location.x+1, location.y)))
+                    have_right_space = await self.bot_player.can_place(build_type, Point2((location.x+2, location.y)))
                     for i in range(3):
                         position_ok = await self.bot_player.can_place(build_type, location)
                         if position_ok and have_right_space:
                             position_ok = True
                             break
                         elif can_move_left:
-                            location = Point2((location.x-1, location.y))
+                            location = Point2((location.x-2, location.y))
                             have_right_space = position_ok
                             position_ok = False
                         else:

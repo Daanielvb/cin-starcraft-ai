@@ -15,6 +15,8 @@ from sc2.position import Point2
 class DefenseManager(GenericBotNonPlayer):
     """ Defense manager class """
 
+    can_train = True
+
     def __init__(self, bot_player):
         """
         :param core.bot.generic_bot_player.GenericBotPlayer bot_player:
@@ -41,15 +43,14 @@ class DefenseManager(GenericBotNonPlayer):
                     ramp_position = self.get_nearest_ramp(barrack)
                     await self.bot_player.do(barrack(AbilityId.RALLY_BUILDING, ramp_position))
 
-
     def find_request(self):
         """ Implements the logic to find the requests that should be handled by the bot
         :return list[core.register_board.request.Request]
         """
         self._relevant_info = self.find_info()
-        army_requests = self.bot_player.board_request.search_request_by_operation_id(OperationTypeId.ARMY)
-        army_requests.extend(self.bot_player.board_request.search_request_by_operation_id(OperationTypeId.DEFEND))
-        army_requests.extend(self.bot_player.board_request.search_request_by_operation_id(OperationTypeId.ATTACK))
+        army_requests = self.bot_player.board_request.search_request_by_operation_ids(
+            [OperationTypeId.TRAIN_MARINE_ALLOW, OperationTypeId.TRAIN_MARINE_DENY,
+             OperationTypeId.ARMY, OperationTypeId.DEFEND, OperationTypeId.ATTACK])
         return army_requests
 
     def find_info(self):
@@ -62,16 +63,34 @@ class DefenseManager(GenericBotNonPlayer):
 
         await self.update_barracks_rally()
 
-        for request in self.requests:
-            if request.status == RequestStatus.TO_BE_DONE and request.operation_type_id == OperationTypeId.ARMY:
-                if request.unit_type_id == UnitTypeId.MARINE:
-                    if self.find_ready_barracks():
-                        await self.request_build(request, self.find_ready_barracks())
-                elif request.unit_type_id == UnitTypeId.MARAUDER:
-                    if self.find_ready_barracks_tech():
-                        await self.request_build(request, self.find_ready_barracks_tech())
+        have_an_army_request = False
+        have_an_attack_request = False
 
-            if request.status == RequestStatus.TO_BE_DONE and request.operation_type_id == OperationTypeId.ATTACK:
+        for request in self.requests:
+            if request.operation_type_id == OperationTypeId.TRAIN_MARINE_ALLOW:
+                self.can_train = True
+                request.status = RequestStatus.DONE
+                self.bot_player.board_request.remove(request)
+
+            elif request.operation_type_id == OperationTypeId.TRAIN_MARINE_DENY:
+                self.can_train = False
+                request.status = RequestStatus.DONE
+                self.bot_player.board_request.remove(request)
+
+            elif request.status == RequestStatus.TO_BE_DONE and request.operation_type_id == OperationTypeId.ARMY:
+                have_an_army_request = True
+                if self.can_train:
+                    if request.unit_type_id == UnitTypeId.MARINE:
+                        barrack = self.find_ready_barracks()
+                        if barrack:
+                            await self.request_build(request, barrack)
+                    elif request.unit_type_id == UnitTypeId.MARAUDER:
+                        barrack_tech = self.find_ready_barracks_tech()
+                        if barrack_tech:
+                            await self.request_build(request, barrack_tech)
+
+            elif request.status == RequestStatus.TO_BE_DONE and request.operation_type_id == OperationTypeId.ATTACK:
+                have_an_attack_request = True
                 if len(self.find_available_defense_units()) >= request.amount:
                     self._defense_units = DefenseBot(
                         bot_player=self.bot_player,
@@ -79,17 +98,12 @@ class DefenseManager(GenericBotNonPlayer):
                         request=request,
                         unit_tags=util.get_units_tags(self.find_available_defense_units())
                     )
-                    self.bot_player.board_request.register(
-                        Request(request_priority=RequestPriority.PRIORITY_MEDIUM, unit_type_id=UnitTypeId.MARINE,
-                                amount=15,
-                                operation_type_id=OperationTypeId.ARMY)
-                    )
                     await self.attack(request, iteration, self._defense_units)
 
-            if request.status == RequestStatus.DONE and request.operation_type_id == OperationTypeId.ATTACK:
+            elif request.status == RequestStatus.DONE and request.operation_type_id == OperationTypeId.ATTACK:
                 #should go back to base if attack was finished...but is not working ;)
                 if len(self.bot_player.known_enemy_units) == 0:
-                    await self.move_base(self._defense_units)
+                    await self.visit_base(self._defense_units)
 
             if not self._defense_units:
                 available_defensive_units = self.find_available_defense_units()
@@ -101,6 +115,11 @@ class DefenseManager(GenericBotNonPlayer):
                         request=request,
                         unit_tags=util.get_units_tags(available_defensive_units)
                     )
+        if have_an_attack_request and not have_an_army_request:
+            self.bot_player.board_request.register(
+                Request(request_priority=RequestPriority.PRIORITY_MEDIUM, unit_type_id=UnitTypeId.MARINE,
+                        amount=15, operation_type_id=OperationTypeId.ARMY)
+            )
 
                     #await self.perform_defense(iteration, self._defense_units)
         #This was to defend from an attack, if there is an INFO that enemies are close,
@@ -148,7 +167,7 @@ class DefenseManager(GenericBotNonPlayer):
         :param int iteration: Game loop iteration
         :param core.bot.terran.d
         """
-        request.status == RequestStatus.ON_GOING
+        request.status = RequestStatus.ON_GOING
         await defense.perform_attack(request)
 
     @staticmethod
