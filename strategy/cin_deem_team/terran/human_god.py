@@ -67,75 +67,103 @@ class HumanGod(GenericBotPlayer):
     def init_request_board(self):
         """ Initialize all first requests """
         self.board_request.register(
-            Request(request_priority=RequestPriority.PRIORITY_HIGHER, operation_type_id=OperationTypeId.TRAIN_SCV_ALLOW)
+            Request(request_priority=RequestPriority.PRIORITY_HIGH, operation_type_id=OperationTypeId.TRAIN_SCV_ALLOW)
         )
         self.board_request.register(
-            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.SCV,
+            Request(request_priority=RequestPriority.PRIORITY_HIGH, unit_type_id=UnitTypeId.SCV,
                     operation_type_id=OperationTypeId.SCOUT)
         )
         self.board_request.register(
-            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.SUPPLYDEPOT,
+            Request(request_priority=RequestPriority.PRIORITY_HIGH, unit_type_id=UnitTypeId.SUPPLYDEPOT,
                     operation_type_id=OperationTypeId.BUILD)
         )
         self.board_request.register(
-            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.SUPPLYDEPOT,
+            Request(request_priority=RequestPriority.PRIORITY_HIGH, unit_type_id=UnitTypeId.SUPPLYDEPOT,
                     operation_type_id=OperationTypeId.BUILD)
         )
         self.board_request.register(
-            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.REFINERY,
+            Request(request_priority=RequestPriority.PRIORITY_HIGH, unit_type_id=UnitTypeId.REFINERY,
                     operation_type_id=OperationTypeId.BUILD)
         )
         self.board_request.register(
-            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.BARRACKS,
+            Request(request_priority=RequestPriority.PRIORITY_HIGH, unit_type_id=UnitTypeId.BARRACKS,
                     operation_type_id=OperationTypeId.BUILD)
         )
         self.board_request.register(
-            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.COMMANDCENTER,
+            Request(request_priority=RequestPriority.PRIORITY_HIGH, unit_type_id=UnitTypeId.COMMANDCENTER,
                     operation_type_id=OperationTypeId.BUILD)
         )
         self.board_request.register(
-            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.BARRACKSTECHLAB,
+            Request(request_priority=RequestPriority.PRIORITY_HIGH, unit_type_id=UnitTypeId.BARRACKS,
                     operation_type_id=OperationTypeId.BUILD)
         )
         self.board_request.register(
-            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.SUPPLYDEPOT,
+            Request(request_priority=RequestPriority.PRIORITY_MEDIUM, unit_type_id=UnitTypeId.MARINE, amount=10,
+                    operation_type_id=OperationTypeId.ARMY)
+        )
+        self.board_request.register(
+            Request(request_priority=RequestPriority.PRIORITY_HIGH, unit_type_id=UnitTypeId.BARRACKSTECHLAB,
                     operation_type_id=OperationTypeId.BUILD)
         )
         self.board_request.register(
-            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.ENGINEERINGBAY,
+            Request(request_priority=RequestPriority.PRIORITY_HIGH, unit_type_id=UnitTypeId.SUPPLYDEPOT,
+                    operation_type_id=OperationTypeId.BUILD)
+        )
+        self.board_request.register(
+            Request(request_priority=RequestPriority.PRIORITY_HIGH, unit_type_id=UnitTypeId.ENGINEERINGBAY,
                     operation_type_id=OperationTypeId.BUILD)
         )
 
         self.board_request.register(
-            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.FACTORY,
+            Request(request_priority=RequestPriority.PRIORITY_HIGH, unit_type_id=UnitTypeId.FACTORY,
                     operation_type_id=OperationTypeId.BUILD)
         )
         self.board_request.register(
-            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.STARPORT,
+            Request(request_priority=RequestPriority.PRIORITY_HIGH, unit_type_id=UnitTypeId.STARPORT,
                     operation_type_id=OperationTypeId.BUILD)
         )
         self.board_request.register(
-            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.SUPPLYDEPOT,
+            Request(request_priority=RequestPriority.PRIORITY_HIGH, unit_type_id=UnitTypeId.SUPPLYDEPOT,
                     operation_type_id=OperationTypeId.BUILD)
         )
         self.board_request.register(
-            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.SUPPLYDEPOT,
+            Request(request_priority=RequestPriority.PRIORITY_HIGH, unit_type_id=UnitTypeId.SUPPLYDEPOT,
                     operation_type_id=OperationTypeId.BUILD)
         )
         self.board_request.register(
-            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.SUPPLYDEPOT,
+            Request(request_priority=RequestPriority.PRIORITY_MEDIUM, unit_type_id=UnitTypeId.MARINE, amount=15,
+                    operation_type_id=OperationTypeId.ARMY)
+        )
+        self.board_request.register(
+            Request(request_priority=RequestPriority.PRIORITY_HIGH, unit_type_id=UnitTypeId.SUPPLYDEPOT,
                     operation_type_id=OperationTypeId.BUILD)
         )
         self.board_request.register(
-            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.REFINERY,
+            Request(request_priority=RequestPriority.PRIORITY_HIGH, unit_type_id=UnitTypeId.REFINERY,
                     operation_type_id=OperationTypeId.BUILD)
         )
         self.board_request.register(
-            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.SUPPLYDEPOT,
+            Request(request_priority=RequestPriority.PRIORITY_HIGH, unit_type_id=UnitTypeId.SUPPLYDEPOT,
                     operation_type_id=OperationTypeId.BUILD)
         )
         self.board_request.register(
-            Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.SUPPLYDEPOT,
+            Request(request_priority=RequestPriority.PRIORITY_HIGH, unit_type_id=UnitTypeId.SUPPLYDEPOT,
+                    operation_type_id=OperationTypeId.BUILD)
+        )
+        self.board_request.register(
+            Request(request_priority=RequestPriority.PRIORITY_HIGH, unit_type_id=UnitTypeId.SUPPLYDEPOT,
+                    operation_type_id=OperationTypeId.BUILD)
+        )
+        self.board_request.register(
+            Request(request_priority=RequestPriority.PRIORITY_HIGH, unit_type_id=UnitTypeId.SUPPLYDEPOT,
+                    operation_type_id=OperationTypeId.BUILD)
+        )
+        self.board_request.register(
+            Request(request_priority=RequestPriority.PRIORITY_HIGH, unit_type_id=UnitTypeId.SUPPLYDEPOT,
+                    operation_type_id=OperationTypeId.BUILD)
+        )
+        self.board_request.register(
+            Request(request_priority=RequestPriority.PRIORITY_HIGH, unit_type_id=UnitTypeId.SUPPLYDEPOT,
                     operation_type_id=OperationTypeId.BUILD)
         )
         self.board_request.register(
@@ -143,11 +171,11 @@ class HumanGod(GenericBotPlayer):
                     operation_type_id=OperationTypeId.ARMY)
         )
         self.board_request.register(
-            Request(request_priority=RequestPriority.PRIORITY_MEDIUM, unit_type_id=UnitTypeId.MARINE, amount=15,
+            Request(request_priority=RequestPriority.PRIORITY_MEDIUM, unit_type_id=UnitTypeId.MARAUDER, amount=30,
                     operation_type_id=OperationTypeId.ARMY)
         )
         self.board_request.register(
-            Request(request_priority=RequestPriority.PRIORITY_MEDIUM, unit_type_id=UnitTypeId.MARAUDER, amount=15,
+            Request(request_priority=RequestPriority.PRIORITY_MEDIUM, unit_type_id=UnitTypeId.MARINE, amount=200,
                     operation_type_id=OperationTypeId.ARMY)
         )
         self.board_request.register(

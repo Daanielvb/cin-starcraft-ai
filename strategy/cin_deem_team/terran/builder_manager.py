@@ -19,6 +19,8 @@ class BuildManager(GenericBotNonPlayer):
 
     current_iteration = 0
 
+    true_start_location = None
+
     def __init__(self, bot_player):
         """
         :param core.bot.generic_bot_player.GenericBotPlayer bot_player:
@@ -38,11 +40,20 @@ class BuildManager(GenericBotNonPlayer):
         :param int iteration: Game loop iteration
         """
         self.current_iteration = iteration
+
+
+
         for request in self.requests:
+            if request.unit_type_id != UnitTypeId.SUPPLYDEPOT and \
+                    self.bot_player.supply_left < 10 and self.bot_player.supply_cap < 200:
+                Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.SUPPLYDEPOT,
+                        operation_type_id=OperationTypeId.BUILD)
+
             if not self._build_unit:
                 self.set_build_unit(iteration=iteration, request=request)
 
-            elif self._build_unit and (not self._build_unit.request or self._build_unit.request.status == RequestStatus.DONE):
+            elif self._build_unit and (not self._build_unit.request or self._build_unit.request.status == RequestStatus.DONE
+                                       or self._build_unit.request.status == RequestStatus.FAILED):
                 self._build_unit.set_request(request)
 
             if not self._started_build_process and self._build_unit.request.status in [RequestStatus.TO_BE_DONE,
@@ -50,7 +61,6 @@ class BuildManager(GenericBotNonPlayer):
 
                 # evita treinar marines se precisar melhorar as barracas
                 if is_addon(request.unit_type_id):
-                    print("\nPLEASE, STOP!!\n")
                     self.bot_player.board_request.register(
                         Request(request_priority=RequestPriority.PRIORITY_HIGHER,
                                 operation_type_id=OperationTypeId.TRAIN_MARINE_DENY)
@@ -74,6 +84,11 @@ class BuildManager(GenericBotNonPlayer):
 
     def requests_status_update(self):
         """ Logic to update the requests status """
+
+        if not self.true_start_location:
+            command_centers = self.bot_player.units(UnitTypeId.COMMANDCENTER)
+            if command_centers:
+                self.true_start_location = command_centers[0].position
 
         if self._build_unit and self.bot_player.get_current_scv_unit(self._build_unit.unit_tags[0]):
             request = self._build_unit.info.request
@@ -110,7 +125,6 @@ class BuildManager(GenericBotNonPlayer):
                                                                  AbilityId.BUILD_TECHLAB_FACTORY,
                                                                  AbilityId.BUILD_TECHLAB_STARPORT
                                                                  ]:
-                        print("\nCAN TRAIN!!\n")
                         self.bot_player.board_request.register(
                             Request(request_priority=RequestPriority.PRIORITY_HIGHER,
                                     operation_type_id=OperationTypeId.TRAIN_MARINE_ALLOW)
@@ -157,7 +171,7 @@ class BuildManager(GenericBotNonPlayer):
         :param core.register_board.request.Request request:
         """
         if request.unit_type_id == UnitTypeId.REFINERY:
-            request.location = self.bot_player.state.vespene_geyser(UnitTypeId.VESPENEGEYSER).closest_to(self.bot_player.start_location)
+            request.location = self.bot_player.state.vespene_geyser(UnitTypeId.VESPENEGEYSER).closest_to(self.true_start_location or self.bot_player.start_location)
         else:
             our_expansion = self.bot_player.get_owned_expansions_locations()[0]
             resources_list = self.bot_player.get_resources_locations(our_expansion)

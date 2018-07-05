@@ -66,6 +66,8 @@ class DefenseManager(GenericBotNonPlayer):
         have_an_army_request = False
         have_an_attack_request = False
 
+        self.bot_player.default_behavior(iteration)
+
         for request in self.requests:
             if request.operation_type_id == OperationTypeId.TRAIN_MARINE_ALLOW:
                 self.can_train = True
@@ -90,7 +92,6 @@ class DefenseManager(GenericBotNonPlayer):
                             await self.request_build(request, barrack_tech)
 
             elif request.status == RequestStatus.TO_BE_DONE and request.operation_type_id == OperationTypeId.ATTACK:
-                have_an_attack_request = True
                 if len(self.find_available_defense_units()) >= request.amount:
                     self._defense_units = DefenseBot(
                         bot_player=self.bot_player,
@@ -115,10 +116,10 @@ class DefenseManager(GenericBotNonPlayer):
                         request=request,
                         unit_tags=util.get_units_tags(available_defensive_units)
                     )
-        if have_an_attack_request and not have_an_army_request:
+        if not have_an_army_request:
             self.bot_player.board_request.register(
                 Request(request_priority=RequestPriority.PRIORITY_MEDIUM, unit_type_id=UnitTypeId.MARINE,
-                        amount=15, operation_type_id=OperationTypeId.ARMY)
+                        amount=5, operation_type_id=OperationTypeId.ARMY)
             )
 
                     #await self.perform_defense(iteration, self._defense_units)
@@ -131,10 +132,10 @@ class DefenseManager(GenericBotNonPlayer):
 
     async def request_build(self, request, barrack):
         if self.bot_player.can_afford(request.unit_type_id) and barrack.noqueue and request.amount >= 1:
-            if self.bot_player.supply_left < 2 and self.bot_player.supply_cap < 200:
-                Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.SUPPLYDEPOT,
-                        operation_type_id=OperationTypeId.BUILD)
-            else:
+            #if self.bot_player.supply_left < 2 and self.bot_player.supply_cap < 200:
+            #    Request(request_priority=RequestPriority.PRIORITY_HIGHER, unit_type_id=UnitTypeId.SUPPLYDEPOT,
+            #            operation_type_id=OperationTypeId.BUILD)
+            #else:
                 await self.bot_player.do(barrack.train(request.unit_type_id))
                 self.update_build_request(request)
 

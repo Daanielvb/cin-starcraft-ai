@@ -51,6 +51,7 @@ class Gather(GenericBotNonPlayer):
             await self.bot_player.distribute_workers()
 
     async def train_scv(self):
+        num_workers = len(self.bot_player.workers)
         num_idle_workers = len(self.bot_player.workers.idle)
         command_centers = self.bot_player.units(UnitTypeId.COMMANDCENTER).ready
         for cmd_cen in command_centers:
@@ -60,6 +61,6 @@ class Gather(GenericBotNonPlayer):
                 for ref in refs:
                     refinery_slots += ref.ideal_harvesters - ref.assigned_harvesters
 
-                if cmd_cen.assigned_harvesters < (cmd_cen.ideal_harvesters + refinery_slots - num_idle_workers):
+                if num_workers == 0 or cmd_cen.assigned_harvesters < (cmd_cen.ideal_harvesters + refinery_slots - num_idle_workers):
                     #precisa treinar um SCV
                     await self.bot_player.do(cmd_cen.train(UnitTypeId.SCV))

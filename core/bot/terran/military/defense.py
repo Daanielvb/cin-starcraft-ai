@@ -8,6 +8,8 @@ from core.register_board.constants import RequestStatus, InfoType
 class DefenseBot(GenericBotNonPlayerUnit):
     """  A defense units bot class """
 
+    attack_mode = False
+
     def __init__(self, bot_player, iteration, request, unit_tags):
         """
         :param core.bot.generic_bot_player.GenericBotPlayer bot_player:
@@ -28,7 +30,11 @@ class DefenseBot(GenericBotNonPlayerUnit):
         """
         self.log("Executing {}".format(self._info.request))
         self.info.status = RequestStatus.ON_GOING
-        await self.defend()
+
+        if self.attack_mode:
+            await self.perform_attack()
+        else:
+            await self.defend()
 
     async def move_units_to(self, position):
         self.log("Moving Defense units")
@@ -46,16 +52,33 @@ class DefenseBot(GenericBotNonPlayerUnit):
             await self.do(unit.attack(target))
 
     def get_attack_position(self):
-        request_position = self.bot_player.board_info.search_request_by_type(InfoType.ENEMY_POSITION)
+        """request_position = self.bot_player.board_info.search_request_by_type(InfoType.ENEMY_POSITION)
         if len(request_position) <= 0:
-            return self.bot_player.enemy_start_locations[0]
+            enemies = self.bot_player.known_enemy_units
+            if enemies:
+                return enemies.closest_to(self.bot_player.start_location).position
+            else:
+                return self.bot_player.enemy_start_locations[0]
         else:
             return request_position[0].value
+        """
+        enemies = self.bot_player.known_enemy_units
+        if enemies:
+            return enemies.closest_to(self.bot_player.start_location).position
+        else:
+            request_position = self.bot_player.board_info.search_request_by_type(InfoType.ENEMY_POSITION)
+            if len(request_position) > 0:
+                return request_position[0].value
+            else:
+                return self.bot_player.enemy_start_locations[0]
 
-    async def perform_attack(self, request):
+    async def perform_attack(self, request=None):
+        self.attack_mode = True
+        self.log("Attack enemy")
         position = self.get_attack_position()
         await self.move_units_to(position)
-        request.status == RequestStatus.DONE
+        if request:
+            request.status = RequestStatus.DONE
 
     async def visit_middle(self):
         self.log("Visiting middle")
@@ -68,6 +91,7 @@ class DefenseBot(GenericBotNonPlayerUnit):
 
     async def defend(self):
         self.log("Defending")
+        self.attack_mode = False
         target = self.select_enemy_target()
         if target:
             await self.attack_target(target)

@@ -102,10 +102,17 @@ class Build(GenericBotNonPlayerUnit):
                         location = None
         return location
 
-    async def get_building_location(self, build_type, location):
-        location = location.towards_with_random_angle(self.bot_player.game_info.map_center, 5)
-        location = await self.bot_player.find_placement(build_type, location, max_distance=5)
-        location = await self.fix_location(location, build_type)
+    async def get_building_location(self, build_type, ref_location):
+        if ref_location:
+            location = ref_location.towards_with_random_angle(self.bot_player.game_info.map_center, 5)
+            location = await self.bot_player.find_placement(build_type, location, max_distance=5)
+            location = await self.fix_location(location, build_type)
+            if not location:
+                location = ref_location.towards_with_random_angle(self.bot_player.game_info.map_center, 5)
+                location = await self.bot_player.find_placement(build_type, location, max_distance=10)
+                location = await self.fix_location(location, build_type)
+        else:
+            location = None
         return location
 
     async def get_vespene_location(self):
