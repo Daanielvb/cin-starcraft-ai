@@ -59,7 +59,7 @@ class DefenseManager(GenericBotNonPlayer):
                                 amount=15,
                                 operation_type_id=OperationTypeId.ARMY)
                     )
-                    await self.attack(request, iteration, self._defense_units)
+                    await self.attack(iteration, self._defense_units)
 
             if not self._defense_units:
                 available_defensive_units = self.find_available_defense_units()
