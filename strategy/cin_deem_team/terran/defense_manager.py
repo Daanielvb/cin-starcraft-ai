@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from sc2.ids.unit_typeid import UnitTypeId
+from sc2.ids.ability_id import AbilityId
 
 from core.bot import util
 from core.bot.generic_bot_non_player import GenericBotNonPlayer
@@ -8,6 +9,8 @@ from core.bot.terran.military.defense import DefenseBot
 from core.register_board.constants import OperationTypeId, RequestStatus, InfoType, RequestPriority
 from core.register_board.request import Request
 
+import numpy as np
+from sc2.position import Point2
 
 class DefenseManager(GenericBotNonPlayer):
     """ Defense manager class """
@@ -20,7 +23,23 @@ class DefenseManager(GenericBotNonPlayer):
         self._defense_units = None
         self._relevant_info = None
 
+    def get_nearest_ramp(self, building):
+        #ramp = self.bot_player.main_base_ramp.top_center
+        ramp = min(self.bot_player.game_info.map_ramps,
+                   key=(lambda r: building.position.distance_to(r.top_center)))
+        return ramp.top_center
+
+    barrack_rallied = set()
     async def update_barracks_rally(self):
+        barracks = self.bot_player.units(UnitTypeId.BARRACKS).ready + \
+                   self.bot_player.units(UnitTypeId.FACTORY).ready + \
+                   self.bot_player.units(UnitTypeId.STARPORT).ready
+        if barracks:
+            for barrack in barracks:
+                if barrack.tag not in self.barrack_rallied:
+                    self.barrack_rallied.add(barrack.tag)
+                    ramp_position = self.get_nearest_ramp(barrack)
+                    await self.bot_player.do(barrack(AbilityId.RALLY_BUILDING, ramp_position))
 
 
     def find_request(self):
@@ -40,6 +59,9 @@ class DefenseManager(GenericBotNonPlayer):
         """ Logic to go through the bot requests
         :param int iteration: Game loop iteration
         """
+
+        await self.update_barracks_rally()
+
         for request in self.requests:
             if request.status == RequestStatus.TO_BE_DONE and request.operation_type_id == OperationTypeId.ARMY:
                 if request.unit_type_id == UnitTypeId.MARINE:
@@ -106,7 +128,6 @@ class DefenseManager(GenericBotNonPlayer):
                 if self._defense_units.are_idle():
                     self.bot_player.board_request.remove(self._defense_units.info.request)
                     self._defense_units.info.status = RequestStatus.DONE
-
 
     @staticmethod
     async def perform_defense(iteration, defense):

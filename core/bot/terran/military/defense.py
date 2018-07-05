@@ -47,7 +47,7 @@ class DefenseBot(GenericBotNonPlayerUnit):
 
     def get_attack_position(self):
         request_position = self.bot_player.board_info.search_request_by_type(InfoType.ENEMY_POSITION)
-        if len(request_position) < 0:
+        if len(request_position) <= 0:
             return self.bot_player.enemy_start_locations[0]
         else:
             return request_position[0].value
