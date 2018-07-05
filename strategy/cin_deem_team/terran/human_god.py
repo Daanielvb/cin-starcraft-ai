@@ -82,6 +82,10 @@ class HumanGod(GenericBotPlayer):
                     operation_type_id=OperationTypeId.BUILD)
         )
         self.board_request.register(
+            Request(request_priority=RequestPriority.PRIORITY_HIGH, unit_type_id=UnitTypeId.SUPPLYDEPOT,
+                    operation_type_id=OperationTypeId.BUILD)
+        )
+        self.board_request.register(
             Request(request_priority=RequestPriority.PRIORITY_HIGH, unit_type_id=UnitTypeId.REFINERY,
                     operation_type_id=OperationTypeId.BUILD)
         )
@@ -179,5 +183,5 @@ class HumanGod(GenericBotPlayer):
                     operation_type_id=OperationTypeId.ARMY)
         )
         self.board_request.register(
-            Request(request_priority=RequestPriority.PRIORITY_MEDIUM, amount=10, operation_type_id=OperationTypeId.ATTACK)
+            Request(request_priority=RequestPriority.PRIORITY_MEDIUM, amount=20, operation_type_id=OperationTypeId.ATTACK)
         )

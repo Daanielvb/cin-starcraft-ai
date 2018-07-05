@@ -66,7 +66,7 @@ class DefenseManager(GenericBotNonPlayer):
         have_an_army_request = False
         have_an_attack_request = False
 
-        self.bot_player.default_behavior(iteration)
+        # self.bot_player.default_behavior(iteration)
 
         for request in self.requests:
             if request.operation_type_id == OperationTypeId.TRAIN_MARINE_ALLOW:
