@@ -108,3 +108,13 @@ class GenericBotNonPlayer(GenericBot):
             return barracks[0]
         else:
             return None
+
+    def find_ready_barracks_tech(self):
+        """
+        :return list[sc2.unit.Unit]:
+        """
+        barracks = self.bot_player.units(UnitTypeId.BARRACKSTECHLAB).ready
+        if len(barracks) >= 1:
+            return barracks[0]
+        else:
+            return None

@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from core.bot import util
 from core.bot.generic_bot_non_player_unit import GenericBotNonPlayerUnit
-from core.register_board.constants import RequestStatus
+from core.register_board.constants import RequestStatus, InfoType
 
 
 class DefenseBot(GenericBotNonPlayerUnit):
@@ -33,7 +34,8 @@ class DefenseBot(GenericBotNonPlayerUnit):
         self.log("Moving Defense units")
         units = self.bot_player.get_current_units(self._info.unit_tags)
         if units:
-            await self.bot_player.do(units.move(position))
+            for unit in units:
+                await self.bot_player.do(unit.move(position))
         else:
             self.info.request.status = RequestStatus.FAILED
 
@@ -42,6 +44,22 @@ class DefenseBot(GenericBotNonPlayerUnit):
         units = self.bot_player.get_current_units(self._info.unit_tags)
         for unit in units:
             await self.do(unit.attack(target))
+
+    def get_attack_position(self):
+        request_position = self.bot_player.board_info.search_request_by_type(InfoType.ENEMY_POSITION)
+        if len(request_position) < 0:
+            return self.bot_player.enemy_start_locations[0]
+        else:
+            return request_position[0].value
+
+    async def perform_attack(self):
+        position = self.get_attack_position()
+        await self.move_units_to(position)
+
+    async def visit_middle(self):
+        self.log("Visiting middle")
+        await self.move_units_to(util.get_mean_location(
+            self.bot_player.start_location, self.bot_player.enemy_start_locations[0]))
 
     async def defend(self):
         self.log("Defending")

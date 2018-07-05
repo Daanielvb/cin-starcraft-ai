@@ -126,6 +126,14 @@ class HumanGod(GenericBotPlayer):
                     operation_type_id=OperationTypeId.ARMY)
         )
         self.board_request.register(
-            Request(request_priority=RequestPriority.PRIORITY_MEDIUM, unit_type_id=UnitTypeId.MARINE, amount=5,
+            Request(request_priority=RequestPriority.PRIORITY_MEDIUM, unit_type_id=UnitTypeId.MARINE, amount=10,
                     operation_type_id=OperationTypeId.ARMY)
+        )
+        self.board_request.register(
+            Request(request_priority=RequestPriority.PRIORITY_MEDIUM, unit_type_id=UnitTypeId.MARAUDER, amount=10,
+                    operation_type_id=OperationTypeId.ARMY)
+        )
+        self.board_request.register(
+            Request(request_priority=RequestPriority.PRIORITY_MEDIUM, amount=8,
+                    operation_type_id=OperationTypeId.ATTACK)
         )
