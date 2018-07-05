@@ -47,19 +47,24 @@ class DefenseBot(GenericBotNonPlayerUnit):
 
     def get_attack_position(self):
         request_position = self.bot_player.board_info.search_request_by_type(InfoType.ENEMY_POSITION)
-        if len(request_position) < 0:
+        if len(request_position) <= 0:
             return self.bot_player.enemy_start_locations[0]
         else:
             return request_position[0].value
 
-    async def perform_attack(self):
+    async def perform_attack(self, request):
         position = self.get_attack_position()
         await self.move_units_to(position)
+        request.status == RequestStatus.DONE
 
     async def visit_middle(self):
         self.log("Visiting middle")
         await self.move_units_to(util.get_mean_location(
             self.bot_player.start_location, self.bot_player.enemy_start_locations[0]))
+
+    async def visit_base(self):
+        self.log("Visiting base")
+        await self.move_units_to(util.add_to_location(self.bot_player.start_location, -10))
 
     async def defend(self):
         self.log("Defending")
